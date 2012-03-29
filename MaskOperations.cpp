@@ -23,6 +23,43 @@
 namespace MaskOperations
 {
 
+itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel, const ITKHelpers::FloatVector2Type& inputDirection, const Mask* const mask)
+{
+  if(!mask->IsValid(queryPixel))
+    {
+    throw std::runtime_error("Can only follow valid pixel+vector across a hole.");
+    }
+
+  // Determine if 'direction' is pointing inside or outside the hole
+
+  ITKHelpers::FloatVector2Type direction = inputDirection;
+
+  itk::Index<2> nextPixelAlongVector = ITKHelpers::GetNextPixelAlongVector(queryPixel, direction);
+
+  // If the next pixel along the isophote is in bounds and in the hole region of the patch, procede.
+  if(mask->GetLargestPossibleRegion().IsInside(nextPixelAlongVector) && mask->IsHole(nextPixelAlongVector))
+    {
+    // do nothing
+    }
+  else
+    {
+    // There is no requirement for the isophote to be pointing a particular orientation, so try to step along the negative isophote.
+    direction *= -1.0;
+    nextPixelAlongVector = ITKHelpers::GetNextPixelAlongVector(queryPixel, direction);
+    }
+
+  // Trace across the hole
+  while(mask->IsHole(nextPixelAlongVector))
+    {
+    nextPixelAlongVector = ITKHelpers::GetNextPixelAlongVector(nextPixelAlongVector, direction);
+    if(!mask->GetLargestPossibleRegion().IsInside(nextPixelAlongVector))
+      {
+      throw std::runtime_error("Helpers::FindPixelAcrossHole could not find a valid neighbor!");
+      }
+    }
+
+  return nextPixelAlongVector;
+}
 
 void ITKImageToVTKImageMasked(const ITKHelpers::FloatVectorImageType* const image, const Mask* const mask,
                               vtkImageData* const outputImage, const unsigned char maskColor[3])

@@ -649,4 +649,106 @@ void WriteMaskedRegionPNG(const TImage* const image, const Mask* mask, const itk
   writer->Update();
 }
 
+
+// This struct is used inside MaskedBlur()
+struct Contribution
+{
+  float weight;
+  unsigned char value;
+  itk::Offset<2> offset;
+};
+
+template <typename TImage>
+void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const float blurVariance, TImage* const output)
+{
+  // Create a Gaussian kernel
+  typedef itk::GaussianOperator<float, 1> GaussianOperatorType;
+
+  // Make a (2*kernelRadius+1)x1 kernel
+  itk::Size<1> radius;
+  radius.Fill(20); // Make a length 41 kernel
+
+  GaussianOperatorType gaussianOperator;
+  gaussianOperator.SetDirection(0); // It doesn't matter which direction we set - we will be interpreting the kernel as 1D (no direction)
+  gaussianOperator.SetVariance(blurVariance);
+  gaussianOperator.CreateToRadius(radius);
+
+//   {
+//   // Debugging only
+//   std::cout << "gaussianOperator: " << gaussianOperator << std::endl;
+//   for(unsigned int i = 0; i < gaussianOperator.Size(); i++)
+//     {
+//     //std::cout << i << " : " << gaussianOperator.GetOffset(i) << std::endl;
+//     std::cout << i << " : " << gaussianOperator.GetElement(i) << std::endl;
+//     }
+//   }
+
+  // Create the output image - data will be deep copied into it
+  typename TImage::Pointer blurredImage = TImage::New();
+  ITKHelpers::InitializeImage<TImage>(blurredImage, inputImage->GetLargestPossibleRegion());
+
+  // Initialize
+  typename TImage::Pointer operatingImage = TImage::New();
+  ITKHelpers::DeepCopy(inputImage, operatingImage.GetPointer());
+
+  for(unsigned int dimensionPass = 0; dimensionPass < 2; dimensionPass++) // The image is 2D
+    {
+    itk::ImageRegionIterator<TImage> imageIterator(operatingImage, operatingImage->GetLargestPossibleRegion());
+
+    while(!imageIterator.IsAtEnd())
+      {
+      itk::Index<2> centerPixel = imageIterator.GetIndex();
+
+      // We should not compute derivatives for pixels in the hole.
+      if(mask->IsHole(centerPixel))
+        {
+        ++imageIterator;
+        continue;
+        }
+
+      // Loop over all of the pixels in the kernel and use the ones that fit a criteria
+      std::vector<Contribution> contributions;
+      for(unsigned int i = 0; i < gaussianOperator.Size(); i++)
+        {
+        // Since we use 1D kernels, we must manually construct a 2D offset with 0 in all
+        // dimensions except the dimension of the current pass
+        itk::Offset<2> offset = ITKHelpers::OffsetFrom1DOffset(gaussianOperator.GetOffset(i), dimensionPass);
+
+        itk::Index<2> pixel = centerPixel + offset;
+        if(blurredImage->GetLargestPossibleRegion().IsInside(pixel) && mask->IsValid(pixel))
+          {
+          Contribution contribution;
+          contribution.weight = gaussianOperator.GetElement(i);
+          contribution.value = operatingImage->GetPixel(pixel);
+          contribution.offset = ITKHelpers::OffsetFrom1DOffset(gaussianOperator.GetOffset(i), dimensionPass);
+          contributions.push_back(contribution);
+          }
+        }
+
+      float total = 0.0f;
+      for(unsigned int i = 0; i < contributions.size(); i++)
+        {
+        total += contributions[i].weight;
+        }
+
+      // Determine the new pixel value
+      float newPixelValue = 0.0f;
+      for(unsigned int i = 0; i < contributions.size(); i++)
+        {
+        itk::Index<2> pixel = centerPixel + contributions[i].offset;
+        newPixelValue += contributions[i].weight/total * operatingImage->GetPixel(pixel);
+        }
+
+      blurredImage->SetPixel(centerPixel, newPixelValue);
+      ++imageIterator;
+      }
+
+    // For the separable Gaussian filtering concept to work, the next pass must operate on the output of the current pass.
+    ITKHelpers::DeepCopy(blurredImage.GetPointer(), operatingImage.GetPointer());
+    }
+
+  // Copy the final image to the output.
+  ITKHelpers::DeepCopy(blurredImage.GetPointer(), output);
+}
+
 } // end namespace

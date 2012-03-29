@@ -55,6 +55,13 @@ itk::ImageRegion<2> RandomValidRegion(const Mask* const mask, const unsigned int
 /** Compute the bounding box of the mask. */
 itk::ImageRegion<2> ComputeBoundingBox(const Mask* const mask);
 
+/** Look from a pixel across the hole in a specified direction and return the pixel that exists on the other side of the hole. */
+itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel, const ITKHelpers::FloatVector2Type& direction, const Mask* const mask);
+
+////////////////// Templates ////////////////
+template <typename TImage>
+void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const float blurVariance, TImage* const output);
+
 template <class TImage>
 void CopySelfPatchIntoHoleOfTargetRegion(TImage* const image, const Mask* const mask,
                                          const itk::ImageRegion<2>& sourceRegionInput,
