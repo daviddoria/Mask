@@ -24,7 +24,7 @@ namespace MaskOperations
 {
 
 
-void ITKImageToVTKImageMasked(const FloatVectorImageType* const image, const Mask* const mask,
+void ITKImageToVTKImageMasked(const ITKHelpers::FloatVectorImageType* const image, const Mask* const mask,
                               vtkImageData* const outputImage, const unsigned char maskColor[3])
 {
   // This function assumes an ND (with N>3) image has the first 3 channels as RGB and extra
@@ -48,7 +48,7 @@ void ITKImageToVTKImageMasked(const FloatVectorImageType* const image, const Mas
   outputImage->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
 
   // Copy all of the input image pixels to the output image
-  itk::ImageRegionConstIteratorWithIndex<FloatVectorImageType> imageIterator(image,image->GetLargestPossibleRegion());
+  itk::ImageRegionConstIteratorWithIndex<ITKHelpers::FloatVectorImageType> imageIterator(image,image->GetLargestPossibleRegion());
   imageIterator.GoToBegin();
 
   while(!imageIterator.IsAtEnd())

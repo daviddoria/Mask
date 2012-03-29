@@ -2,9 +2,8 @@
 #include <stdexcept>
 
 // Custom
-#include "OutputHelpers.h"
 #include "Mask.h"
-#include "ITKHelpers.h"
+#include "ITKHelpers/ITKHelpers.h"
 
 // ITK
 #include "itkBresenhamLine.h"
@@ -13,6 +12,9 @@
 #include "itkImageRegionIterator.h"
 #include "itkLaplacianOperator.h"
 #include "itkMedianImageFilter.h"
+
+// Qt
+#include <QColor>
 
 namespace MaskOperations
 {
@@ -638,10 +640,10 @@ void WriteMaskedRegionPNG(const TImage* const image, const Mask* mask, const itk
     ++imageIterator;
     }
 
-  RGBImageType::Pointer rgbImage = RGBImageType::New();
+  ITKHelpers::RGBImageType::Pointer rgbImage = ITKHelpers::RGBImageType::New();
   ITKHelpers::VectorImageToRGBImage(regionOfInterestImageFilter->GetOutput(), rgbImage.GetPointer());
 
-  typename itk::ImageFileWriter<RGBImageType>::Pointer writer = itk::ImageFileWriter<RGBImageType>::New();
+  typename itk::ImageFileWriter<ITKHelpers::RGBImageType>::Pointer writer = itk::ImageFileWriter<ITKHelpers::RGBImageType>::New();
   writer->SetFileName(filename);
   writer->SetInput(rgbImage.GetPointer());
   writer->Update();

@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 2.8)
 
 add_library(libMask Mask.cpp MaskOperations.cpp)
 
+FIND_PACKAGE(Qt4 REQUIRED)
+INCLUDE(${QT_USE_FILE})
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 # This is needed for shared_ptr and the trick using enable_if and if_fundamental to allow scalars
