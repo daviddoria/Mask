@@ -559,3 +559,38 @@ void Mask::MarkAsValid(const itk::Index<2>& pixel)
 {
   this->SetPixel(pixel, this->ValidValue);
 }
+
+bool Mask::HasValid4Neighbor(const itk::Index<2>& pixel)
+{
+  std::vector<itk::Index<2> > neighbors =
+        ITKHelpers::Get4NeighborIndicesInsideRegion(pixel, this->GetLargestPossibleRegion());
+
+  for(unsigned int i = 0; i < neighbors.size(); ++i)
+    {
+    if(this->IsValid(neighbors[i]))
+      {
+      return true;
+      }
+    }
+
+  return false;
+}
+
+
+std::vector<itk::Index<2> > Mask::GetValid4Neighbors(const itk::Index<2>& pixel)
+{
+  std::vector<itk::Index<2> > neighborhood =
+          ITKHelpers::Get4NeighborIndicesInsideRegion(pixel, this->GetLargestPossibleRegion());
+
+  std::vector<itk::Index<2> > validNeighbors;
+
+  for(unsigned int i = 0; i < neighborhood.size(); ++i)
+    {
+    if(this->IsValid(neighborhood[i]))
+      {
+      validNeighbors.push_back(neighborhood[i]);
+      }
+    }
+
+  return validNeighbors;
+}
