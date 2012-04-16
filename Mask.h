@@ -141,9 +141,11 @@ public:
   template<typename TImage, typename TColor>
   void ApplyColorToImage(TImage* const image, const TColor& color) const;
 
-  /** Change the hole pixels in 'image' to a specified 'holeValue'.*/
+  /** Change the hole pixels in 'image' to a specified 'holeValue'. 'holeValue' is not const because it might
+   need to be modified if it is not provided or is invalid. */
   template<typename TImage>
-  void ApplyToImage(TImage* const image, const typename TImage::PixelType& holeValue) const;
+  void ApplyToImage(TImage* const image,
+                    typename TImage::PixelType holeValue = typename TImage::PixelType()) const;
 
   /** Recolor the hole pixels in 'image' a specified 'color'.*/
   template<typename TImage, typename TColor>

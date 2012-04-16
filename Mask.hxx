@@ -97,11 +97,8 @@ void Mask::ApplyColorToImage(TImage* const image, const TColor& color) const
 
 
 template<typename TImage>
-void Mask::ApplyToImage(TImage* const image, const typename TImage::PixelType& holeValue) const
+void Mask::ApplyToImage(TImage* const image, typename TImage::PixelType holeValue) const
 {
-  // Using generics, we allow any Color class that has .red(), .green(), and .blue() member functions
-  // to be used to specify the color.
-
   if(image->GetLargestPossibleRegion() != this->GetLargestPossibleRegion())
     {
     std::cerr << "Image and mask must be the same size!" << std::endl
@@ -110,6 +107,14 @@ void Mask::ApplyToImage(TImage* const image, const typename TImage::PixelType& h
     return;
     }
 
+  // If this condition fails, either the user has passed an invalid value or the default parameter value was used
+  // because the user did not pass a value at all.
+  if(holeValue.GetSize() != image->GetNumberOfComponentsPerPixel())
+  {
+    holeValue.SetSize(image->GetNumberOfComponentsPerPixel());
+    holeValue.Fill(0);
+  }
+  
   itk::ImageRegionConstIterator<Mask> maskIterator(this, this->GetLargestPossibleRegion());
 
   while(!maskIterator.IsAtEnd())
