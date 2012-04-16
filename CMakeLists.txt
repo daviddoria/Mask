@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
 
-add_library(libMask Mask.cpp MaskOperations.cpp)
-target_link_libraries(libMask libHelpers libITKHelpers)
-
 FIND_PACKAGE(Qt4 REQUIRED)
 INCLUDE(${QT_USE_FILE})
+
+add_library(libMask Mask.cpp MaskOperations.cpp MaskQt.cpp)
+target_link_libraries(libMask libHelpers libITKHelpers)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 

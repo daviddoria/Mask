@@ -30,9 +30,6 @@
 #ifndef MASK_H
 #define MASK_H
 
-// Qt
-#include <QImage>
-
 // ITK
 #include "itkImage.h"
 
@@ -222,10 +219,7 @@ public:
 
   /** Mark the pixel as a valid pixel.*/
   void MarkAsValid(const itk::Index<2>& pixel);
-  
-  QImage GetQtImage();
 
-  QImage GetQtImage(const itk::ImageRegion<2>& region);
   
 private:
 
