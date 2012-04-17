@@ -597,3 +597,29 @@ std::vector<itk::Index<2> > Mask::GetValid4Neighbors(const itk::Index<2>& pixel)
 
   return validNeighbors;
 }
+
+bool Mask::IsHoleValue(const unsigned char value) const
+{
+  if(value == this->HoleValue)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+
+bool Mask::IsValidValue(const unsigned char value) const
+{
+  if(value == this->ValidValue)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
