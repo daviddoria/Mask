@@ -27,6 +27,9 @@ class Mask;
 #include "itkIndex.h"
 #include "itkImageRegion.h"
 
+// VTK
+class vtkImageData;
+
 // Qt
 #include <QImage>
 
@@ -45,6 +48,8 @@ void WriteMaskedRegionPNG(const TImage* const image, const Mask* mask, const itk
 
 void ITKImageToVTKImageMasked(const ITKHelpers::FloatVectorImageType* const image, const Mask* const mask,
                               vtkImageData* const outputImage, const unsigned char maskColor[3]);
+
+void SetMaskTransparency(const Mask* const input, vtkImageData* outputImage);
 
 /** Return a random region that is entirely inside the hole. */
 itk::ImageRegion<2> RandomRegionInsideHole(const Mask* const mask, const unsigned int halfWidth);
