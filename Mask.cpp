@@ -29,9 +29,12 @@
 #include "itkBinaryContourImageFilter.h"
 #include "itkBinaryDilateImageFilter.h"
 #include "itkBinaryErodeImageFilter.h"
+#include "itkConnectedComponentImageFilter.h"
 #include "itkFlatStructuringElement.h"
 #include "itkInvertIntensityImageFilter.h"
 #include "itkImageRegionIterator.h"
+#include "itkLabelShapeKeepNObjectsImageFilter.h"
+#include "itkRescaleIntensityImageFilter.h"
 
 Mask::Mask()
 {
@@ -623,3 +626,30 @@ bool Mask::IsValidValue(const unsigned char value) const
   }
 }
 
+void Mask::KeepLargestHole()
+{
+  // Only keep the largest segment
+  typedef itk::ConnectedComponentImageFilter<Mask, Mask> ConnectedComponentImageFilterType;
+  ConnectedComponentImageFilterType::Pointer connectedComponentFilter = ConnectedComponentImageFilterType::New ();
+  connectedComponentFilter->SetInput(this);
+  connectedComponentFilter->Update();
+
+  typedef itk::LabelShapeKeepNObjectsImageFilter<Mask> LabelShapeKeepNObjectsImageFilterType;
+  LabelShapeKeepNObjectsImageFilterType::Pointer labelShapeKeepNObjectsImageFilter =
+           LabelShapeKeepNObjectsImageFilterType::New();
+  labelShapeKeepNObjectsImageFilter->SetInput(connectedComponentFilter->GetOutput());
+  labelShapeKeepNObjectsImageFilter->SetBackgroundValue(0);
+  labelShapeKeepNObjectsImageFilter->SetNumberOfObjects(1);
+  labelShapeKeepNObjectsImageFilter
+            ->SetAttribute(LabelShapeKeepNObjectsImageFilterType::LabelObjectType::NUMBER_OF_PIXELS);
+  labelShapeKeepNObjectsImageFilter->Update();
+
+  typedef itk::RescaleIntensityImageFilter<Mask, Mask> RescaleFilterType;
+  RescaleFilterType::Pointer rescaleFilter = RescaleFilterType::New();
+  rescaleFilter->SetOutputMinimum(0);
+  rescaleFilter->SetOutputMaximum(255);
+  rescaleFilter->SetInput(labelShapeKeepNObjectsImageFilter->GetOutput());
+  rescaleFilter->Update();
+
+  ITKHelpers::DeepCopy(rescaleFilter->GetOutput(), this);
+}

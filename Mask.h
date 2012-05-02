@@ -100,6 +100,9 @@ public:
   /** Snap the pixel values to either 'hole' or 'valid'.*/
   void Cleanup();
 
+  /** Only keep the largest separate hole.*/
+  void KeepLargestHole();
+  
   /** Increase the size of the hole.*/
   void ExpandHole(const unsigned int kernelRadius);
 
