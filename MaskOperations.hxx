@@ -4,6 +4,7 @@
 // Custom
 #include "Mask.h"
 #include "ITKHelpers/ITKHelpers.h"
+#include "ITKHelpers/ITKStatistics.h"
 
 // ITK
 #include "itkBresenhamLine.h"
@@ -641,7 +642,7 @@ void WriteMaskedRegionPNG(const TImage* const image, const Mask* mask, const itk
     }
 
   ITKHelpers::RGBImageType::Pointer rgbImage = ITKHelpers::RGBImageType::New();
-  ITKHelpers::VectorImageToRGBImage(regionOfInterestImageFilter->GetOutput(), rgbImage.GetPointer());
+  //ITKHelpers::VectorImageToRGBImage(regionOfInterestImageFilter->GetOutput(), rgbImage.GetPointer());
 
   typename itk::ImageFileWriter<ITKHelpers::RGBImageType>::Pointer writer = itk::ImageFileWriter<ITKHelpers::RGBImageType>::New();
   writer->SetFileName(filename);
