@@ -213,6 +213,11 @@ public:
 
   /** Count valid pixels in a region.*/
   unsigned int CountValidPixels(const itk::ImageRegion<2>& region) const;
+
+  /** Count valid pixels in a region.*/
+  unsigned int CountValidPatches(const unsigned int patchRadius) const;
+
+  itk::ImageRegion<2> FindFirstValidPatch(const unsigned int patchRadius);
   
   /** Count valid pixels in the whole mask.*/
   unsigned int CountValidPixels() const;

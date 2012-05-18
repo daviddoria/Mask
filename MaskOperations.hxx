@@ -509,7 +509,7 @@ typename TypeTraits<typename TImage::PixelType>::LargerType VarianceInRegionMask
     ++maskIterator;
     }
 
-  return Statistics::Variance(pixels);
+  return ITKStatistics::Variance(pixels);
 }
 
 

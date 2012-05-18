@@ -653,3 +653,48 @@ void Mask::KeepLargestHole()
 
   ITKHelpers::DeepCopy(rescaleFilter->GetOutput(), this);
 }
+
+unsigned int Mask::CountValidPatches(const unsigned int patchRadius) const
+{
+
+  itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(this, this->GetLargestPossibleRegion());
+
+  unsigned int counter = 0;
+  // std::cout << "CountValidPatches (patch radius " << patchRadius << ")..." << std::endl;
+  while(!maskIterator.IsAtEnd())
+    {
+    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(maskIterator.GetIndex(), patchRadius);
+
+    if(this->IsValid(region))
+      {
+      counter++;
+      }
+    ++maskIterator;
+    }
+
+  //std::cout << "There were " << counter << " valid patches." << std::endl;
+  return counter;
+}
+
+itk::ImageRegion<2> Mask::FindFirstValidPatch(const unsigned int patchRadius)
+{
+  itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(this, this->GetLargestPossibleRegion());
+
+  while(!maskIterator.IsAtEnd())
+    {
+    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(maskIterator.GetIndex(), patchRadius);
+
+    if(this->IsValid(region))
+      {
+      return region;
+      }
+
+    ++maskIterator;
+    }
+
+  throw std::runtime_error("No valid patches found!");
+
+  // We should never reach this point
+  itk::ImageRegion<2> dummyRegion;
+  return dummyRegion;
+}
