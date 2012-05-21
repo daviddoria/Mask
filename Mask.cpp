@@ -22,7 +22,7 @@
 #include <QColor>
 
 // Submodules
-#include "Helpers/Helpers.h"
+#include "ITKHelpers/Helpers/Helpers.h"
 #include "ITKHelpers/ITKHelpers.h"
 
 // ITK
