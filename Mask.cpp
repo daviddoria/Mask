@@ -66,8 +66,14 @@ void Mask::Read(const std::string& filename)
   ImageReaderType::Pointer imageReader = ImageReaderType::New();
   imageReader->SetFileName(filename);
   imageReader->Update();
+
+  unsigned char tempHoleValue = this->HoleValue;
+  unsigned char tempValidValue = this->ValidValue;
   
   DeepCopyFrom(imageReader->GetOutput());
+
+  this->HoleValue = tempHoleValue;
+  this->ValidValue = tempValidValue;
 }
 
 unsigned int Mask::CountBoundaryPixels(const itk::ImageRegion<2>& region) const
