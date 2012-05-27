@@ -744,12 +744,28 @@ void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const fl
       ++imageIterator;
       }
 
-    // For the separable Gaussian filtering concept to work, the next pass must operate on the output of the current pass.
+    // For the separable Gaussian filtering concept to work,
+    // the next pass must operate on the output of the current pass.
     ITKHelpers::DeepCopy(blurredImage.GetPointer(), operatingImage.GetPointer());
     }
 
   // Copy the final image to the output.
   ITKHelpers::DeepCopy(blurredImage.GetPointer(), output);
+}
+
+template <class TImage>
+void CopyInHoleRegion(const TImage* const input, TImage* const output, const Mask* const mask)
+{
+  itk::ImageRegionConstIterator<TImage> imageIterator(input, input->GetLargestPossibleRegion());
+
+  while(!imageIterator.IsAtEnd())
+  {
+    if(mask->IsHole(imageIterator.GetIndex()))
+    {
+      output->SetPixel(imageIterator.GetIndex(), imageIterator.Get());
+    }
+    ++imageIterator;
+  }
 }
 
 } // end namespace

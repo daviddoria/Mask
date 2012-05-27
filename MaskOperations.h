@@ -38,7 +38,8 @@ namespace MaskOperations
 
 /** Write a 'region' of an 'image' to 'filename', coloring any invalid pixels in 'mask' the color 'holeColor'. */
 template<typename TImage>
-void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::ImageRegion<2>& region, const std::string& filename,
+void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::ImageRegion<2>& region,
+                       const std::string& filename,
                        const typename TImage::PixelType& holeColor);
 
 /** Write a 'region' of an 'image' to 'filename', coloring any invalid pixels in 'mask' the color 'holeColor'. */
@@ -73,7 +74,11 @@ void CopySelfPatchIntoHoleOfTargetRegion(TImage* const image, const Mask* const 
                                          const itk::ImageRegion<2>& destinationRegionInput);
 
 template <class TImage>
-void CopySourcePatchIntoHoleOfTargetRegion(const TImage* const sourceImage, TImage* const targetImage, const Mask* const mask,
+void CopyInHoleRegion(const TImage* const input, TImage* const output, const Mask* const mask);
+
+template <class TImage>
+void CopySourcePatchIntoHoleOfTargetRegion(const TImage* const sourceImage, TImage* const targetImage,
+                                           const Mask* const mask,
                                            const itk::ImageRegion<2>& sourceRegionInput,
                                            const itk::ImageRegion<2>& destinationRegionInput);
 
