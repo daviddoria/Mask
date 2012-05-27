@@ -14,9 +14,6 @@
 #include "itkLaplacianOperator.h"
 #include "itkMedianImageFilter.h"
 
-// Qt
-#include <QColor>
-
 namespace MaskOperations
 {
   
@@ -513,63 +510,6 @@ typename TypeTraits<typename TImage::PixelType>::LargerType VarianceInRegionMask
   return ITKStatistics::Variance(pixels);
 }
 
-
-template <typename TImage>
-QImage GetQImageMasked(const TImage* image, const Mask* const mask, const itk::ImageRegion<2>& region, const QColor& color)
-{
-  // Call the stronger function with the same 'region' for both the image and mask.
-  return GetQImageMasked(image, region, mask, region, color);
-}
-
-template <typename TImage>
-QImage GetQImageMasked(const TImage* image, const itk::ImageRegion<2>& imageRegion, const Mask* const mask,
-                       const itk::ImageRegion<2>& maskRegion, const QColor& holeColor)
-{
-  assert(imageRegion.GetSize() == maskRegion.GetSize());
-
-  QImage qimage(imageRegion.GetSize()[0], imageRegion.GetSize()[1], QImage::Format_RGB888);
-
-  typedef itk::RegionOfInterestImageFilter< TImage, TImage > RegionOfInterestImageFilterType;
-  typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
-  regionOfInterestImageFilter->SetRegionOfInterest(imageRegion);
-  regionOfInterestImageFilter->SetInput(image);
-  regionOfInterestImageFilter->Update();
-
-  typedef itk::RegionOfInterestImageFilter< Mask, Mask> RegionOfInterestMaskFilterType;
-  typename RegionOfInterestMaskFilterType::Pointer regionOfInterestMaskFilter = RegionOfInterestMaskFilterType::New();
-  regionOfInterestMaskFilter->SetRegionOfInterest(maskRegion);
-  regionOfInterestMaskFilter->SetInput(mask);
-  regionOfInterestMaskFilter->Update();
-
-  itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(),
-                                                 regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
-
-  unsigned int numberOfHolePixels = 0;
-  while(!imageIterator.IsAtEnd())
-    {
-    typename TImage::PixelType pixel = imageIterator.Get();
-
-    itk::Index<2> index = imageIterator.GetIndex();
-
-    if(regionOfInterestMaskFilter->GetOutput()->IsHole(index))
-      {
-      qimage.setPixel(index[0], index[1], holeColor.rgb());
-      numberOfHolePixels++;
-      }
-    else
-      {
-      QColor pixelColor(static_cast<int>(pixel[0]), static_cast<int>(pixel[1]), static_cast<int>(pixel[2]));
-      qimage.setPixel(index[0], index[1], pixelColor.rgb());
-      }
-
-    ++imageIterator;
-    }
-
-  // std::cout << "There were " << numberOfHolePixels << " hole pixels." << std::endl;
-
-  //return qimage; // The actual image region
-  return qimage.mirrored(false, true); // The flipped image region
-}
 
 
 template<typename TImage>
