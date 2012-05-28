@@ -18,9 +18,6 @@
 
 #include "Mask.h"
 
-// Qt
-#include <QColor>
-
 // Submodules
 #include "ITKHelpers/Helpers/Helpers.h"
 #include "ITKHelpers/ITKHelpers.h"
@@ -331,6 +328,12 @@ void Mask::OutputMembers() const
 {
   std::cout << "HoleValue: " << static_cast<unsigned int>(this->HoleValue) << std::endl;
   std::cout << "ValidValue: " << static_cast<unsigned int>(this->ValidValue) << std::endl;
+}
+
+void Mask::CopyInformationFrom(const Mask* const inputMask)
+{
+  this->SetHoleValue(inputMask->GetHoleValue());
+  this->SetValidValue(inputMask->GetValidValue());
 }
 
 void Mask::DeepCopyFrom(const Mask* const inputMask)

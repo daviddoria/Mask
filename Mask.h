@@ -127,6 +127,9 @@ public:
   /** Copy a mask.*/
   void DeepCopyFrom(const Mask* const inputMask);
 
+  /** Copy information from another mask.*/
+  void CopyInformationFrom(const Mask* const inputMask);
+
   /** Copy the holes from a mask.*/
   void CopyHolesFrom(const Mask* const inputMask);
 
@@ -231,7 +234,6 @@ public:
   /** Mark the pixel as a valid pixel.*/
   void MarkAsValid(const itk::Index<2>& pixel);
 
-  
 private:
 
   Mask(const Self &);    //purposely not implemented

@@ -59,11 +59,23 @@ itk::ImageRegion<2> RandomValidRegion(const Mask* const mask, const unsigned int
 itk::ImageRegion<2> ComputeBoundingBox(const Mask* const mask);
 
 /** Look from a pixel across the hole in a specified direction and return the pixel that exists on the other side of the hole. */
-itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel, const ITKHelpers::FloatVector2Type& direction, const Mask* const mask);
+itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel,
+                                  const ITKHelpers::FloatVector2Type& direction, const Mask* const mask);
+
+
+/** Get all regions of a particular size that contain only valid pixels.*/
+std::vector<itk::ImageRegion<2> > GetAllFullyValidRegions(const Mask* const mask, const unsigned int patchRadius);
+
+/** Get a random fully valid patch in the specified region.*/
+itk::ImageRegion<2> GetRandomValidPatchInRegion(const Mask* const mask,
+                                                const itk::ImageRegion<2>& searchRegion,
+                                                const unsigned int patchRadius,
+                                                const unsigned int maxNumberOfAttempts = 10);
 
 ////////////////// Templates ////////////////
 template <typename TImage>
-void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const float blurVariance, TImage* const output);
+void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const float blurVariance,
+                TImage* const output);
 
 template <class TImage>
 void CopySelfPatchIntoHoleOfTargetRegion(TImage* const image, const Mask* const mask,
@@ -118,7 +130,8 @@ void AddNoiseInHole(TImage* const image, const Mask* const mask, const float noi
 
 /** Interpolate values through a hole, filling only pixels that are in the hole. This function assumes one hole entry and one hole exit (i.e. the line between p0 and p1 only intersects the hole twice). */
 template<typename TImage>
-void InteroplateThroughHole(TImage* const image, Mask* const mask, const itk::Index<2>& p0, const itk::Index<2>& p1, const unsigned int lineThickness = 0);
+void InteroplateThroughHole(TImage* const image, Mask* const mask, const itk::Index<2>& p0,
+                            const itk::Index<2>& p1, const unsigned int lineThickness = 0);
 
 template<typename TImage>
 void InteroplateLineBetweenPoints(TImage* const image, const itk::Index<2>& p0, const itk::Index<2>& p1);

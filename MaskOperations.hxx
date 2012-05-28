@@ -26,8 +26,10 @@ void CopySelfPatchIntoHoleOfTargetRegion(TImage* const image, const Mask* const 
 }
 
 template <class TImage>
-void CopySourcePatchIntoHoleOfTargetRegion(const TImage* const sourceImage, TImage* const targetImage, const Mask* const mask,
-                             const itk::ImageRegion<2>& sourceRegionInput, const itk::ImageRegion<2>& destinationRegionInput)
+void CopySourcePatchIntoHoleOfTargetRegion(const TImage* const sourceImage, TImage* const targetImage,
+                                           const Mask* const mask,
+                                           const itk::ImageRegion<2>& sourceRegionInput,
+                                           const itk::ImageRegion<2>& destinationRegionInput)
 {
   itk::ImageRegion<2> fullImageRegion = sourceImage->GetLargestPossibleRegion();
 
@@ -696,8 +698,24 @@ void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const fl
 template <class TImage>
 void CopyInHoleRegion(const TImage* const input, TImage* const output, const Mask* const mask)
 {
-  itk::ImageRegionConstIterator<TImage> imageIterator(input, input->GetLargestPossibleRegion());
+  if(input->GetLargestPossibleRegion().GetSize() != output->GetLargestPossibleRegion().GetSize())
+  {
+    std::stringstream ss;
+    ss << "Input size (" << input->GetLargestPossibleRegion().GetSize() << ") must match output size ("
+       << output->GetLargestPossibleRegion().GetSize() << ")";
+    throw std::runtime_error(ss.str());
+  }
 
+  if(input->GetLargestPossibleRegion().GetSize() != mask->GetLargestPossibleRegion().GetSize())
+  {
+    std::stringstream ss;
+    ss << "Input size (" << input->GetLargestPossibleRegion().GetSize() << ") must match mask size ("
+       << mask->GetLargestPossibleRegion().GetSize() << ")";
+    throw std::runtime_error(ss.str());
+  }
+  
+  itk::ImageRegionConstIterator<TImage> imageIterator(input, input->GetLargestPossibleRegion());
+  std::cout << "Hole value is " << static_cast<int>(mask->GetHoleValue()) << std::endl;
   while(!imageIterator.IsAtEnd())
   {
     if(mask->IsHole(imageIterator.GetIndex()))

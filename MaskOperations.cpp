@@ -229,4 +229,66 @@ void SetMaskTransparency(const Mask* const input, vtkImageData* outputImage)
   outputImage->Modified();
 }
 
+
+std::vector<itk::ImageRegion<2> > GetAllFullyValidRegions(const Mask* const mask, const unsigned int patchRadius)
+{
+  std::vector<itk::ImageRegion<2> > fullyValidRegions;
+  
+  itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(mask, mask->GetLargestPossibleRegion());
+  imageIterator.GoToBegin();
+
+  while(!imageIterator.IsAtEnd())
+    {
+    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(imageIterator.GetIndex(), patchRadius);
+    if(mask->GetLargestPossibleRegion().IsInside(region) && mask->IsValid(region))
+      {
+      fullyValidRegions.push_back(region);
+      }
+    ++imageIterator;
+    }
+
+  return fullyValidRegions;
+}
+
+itk::ImageRegion<2> GetRandomValidPatchInRegion(const Mask* const mask,
+                                                const itk::ImageRegion<2>& searchRegion,
+                                                const unsigned int patchRadius,
+                                                const unsigned int maxNumberOfAttempts)
+{
+  itk::ImageRegion<2> region;
+
+  unsigned int numberOfAttempts = 0;
+
+  do
+  {
+    int randX = Helpers::RandomInt(searchRegion.GetIndex()[0],
+                                   searchRegion.GetIndex()[0] + searchRegion.GetSize()[0] - 1);
+
+    int randY = Helpers::RandomInt(searchRegion.GetIndex()[1],
+                                   searchRegion.GetIndex()[1] + searchRegion.GetSize()[1] - 1);
+
+    itk::Index<2> randomIndex = {{randX, randY}};
+    //std::cout << "RandomIndex: " << randomIndex << std::endl;
+
+    region = ITKHelpers::GetRegionInRadiusAroundPixel(randomIndex, patchRadius);
+    numberOfAttempts++;
+    if(numberOfAttempts > maxNumberOfAttempts)
+    {
+      std::vector<itk::ImageRegion<2> > allRegions = GetAllFullyValidRegions(mask, patchRadius);
+      if(allRegions.size() == 0) // There are actually no valid regions in this searchRegion
+      {
+        itk::Size<2> regionSize = {{0,0}};
+        region.SetSize(regionSize);
+        return region;
+      }
+      else
+      {
+        return allRegions[Helpers::RandomInt(0, allRegions.size() - 1)];
+      }
+    }
+  } while(!(mask->GetLargestPossibleRegion().IsInside(region) && mask->IsValid(region)));
+
+  return region;
+}
+
 } // end namespace
