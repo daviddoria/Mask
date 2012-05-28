@@ -229,18 +229,21 @@ void SetMaskTransparency(const Mask* const input, vtkImageData* outputImage)
   outputImage->Modified();
 }
 
-
-std::vector<itk::ImageRegion<2> > GetAllFullyValidRegions(const Mask* const mask, const unsigned int patchRadius)
+std::vector<itk::ImageRegion<2> > GetAllFullyValidRegions(const Mask* const mask,
+                                                          const itk::ImageRegion<2>& searchRegion,
+                                                          const unsigned int patchRadius)
 {
   std::vector<itk::ImageRegion<2> > fullyValidRegions;
-  
-  itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(mask, mask->GetLargestPossibleRegion());
-  imageIterator.GoToBegin();
+
+  itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(mask, searchRegion);
+
+  itk::Size<2> patchSize = {{patchRadius * 2 + 1, patchRadius * 2 + 1}};
 
   while(!imageIterator.IsAtEnd())
     {
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(imageIterator.GetIndex(), patchRadius);
-    if(mask->GetLargestPossibleRegion().IsInside(region) && mask->IsValid(region))
+    itk::ImageRegion<2> region(imageIterator.GetIndex(), patchSize);
+
+    if(searchRegion.IsInside(region) && mask->IsValid(region))
       {
       fullyValidRegions.push_back(region);
       }
@@ -250,14 +253,21 @@ std::vector<itk::ImageRegion<2> > GetAllFullyValidRegions(const Mask* const mask
   return fullyValidRegions;
 }
 
+std::vector<itk::ImageRegion<2> > GetAllFullyValidRegions(const Mask* const mask, const unsigned int patchRadius)
+{
+  return GetAllFullyValidRegions(mask, mask->GetLargestPossibleRegion(), patchRadius);
+}
+
 itk::ImageRegion<2> GetRandomValidPatchInRegion(const Mask* const mask,
                                                 const itk::ImageRegion<2>& searchRegion,
                                                 const unsigned int patchRadius,
                                                 const unsigned int maxNumberOfAttempts)
 {
-  itk::ImageRegion<2> region;
-
   unsigned int numberOfAttempts = 0;
+
+  itk::Size<2> patchSize = {{patchRadius * 2 + 1, patchRadius * 2 + 1}};
+  itk::ImageRegion<2> region;
+  region.SetSize(patchSize);
 
   do
   {
@@ -269,21 +279,28 @@ itk::ImageRegion<2> GetRandomValidPatchInRegion(const Mask* const mask,
 
     itk::Index<2> randomIndex = {{randX, randY}};
     //std::cout << "RandomIndex: " << randomIndex << std::endl;
+    region.SetIndex(randomIndex);
 
-    region = ITKHelpers::GetRegionInRadiusAroundPixel(randomIndex, patchRadius);
     numberOfAttempts++;
     if(numberOfAttempts > maxNumberOfAttempts)
     {
-      std::vector<itk::ImageRegion<2> > allRegions = GetAllFullyValidRegions(mask, patchRadius);
+      //std::cout << "Searching all patches in region for a valid patch..." << std::endl;
+      std::vector<itk::ImageRegion<2> > allRegions = GetAllFullyValidRegions(mask, searchRegion, patchRadius);
       if(allRegions.size() == 0) // There are actually no valid regions in this searchRegion
       {
+        //std::cout << "No valid patch found." << std::endl;
         itk::Size<2> regionSize = {{0,0}};
         region.SetSize(regionSize);
         return region;
       }
       else
       {
-        return allRegions[Helpers::RandomInt(0, allRegions.size() - 1)];
+//         std::cout << "Valid patch finally found." << std::endl;
+//         std::cout << "allRegions.size() = " << allRegions.size() << std::endl;
+        unsigned int randomIndex = Helpers::RandomInt(0, allRegions.size() - 1);
+//        std::cout << "Returning patch " << randomIndex << std::endl;
+
+        return allRegions[randomIndex];
       }
     }
   } while(!(mask->GetLargestPossibleRegion().IsInside(region) && mask->IsValid(region)));

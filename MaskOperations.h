@@ -66,6 +66,11 @@ itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel,
 /** Get all regions of a particular size that contain only valid pixels.*/
 std::vector<itk::ImageRegion<2> > GetAllFullyValidRegions(const Mask* const mask, const unsigned int patchRadius);
 
+/** Get all regions of a particular size inside searchRegion that contain only valid pixels.*/
+std::vector<itk::ImageRegion<2> > GetAllFullyValidRegions(const Mask* const mask,
+                                                          const itk::ImageRegion<2>& searchRegion,
+                                                          const unsigned int patchRadius);
+
 /** Get a random fully valid patch in the specified region.*/
 itk::ImageRegion<2> GetRandomValidPatchInRegion(const Mask* const mask,
                                                 const itk::ImageRegion<2>& searchRegion,
