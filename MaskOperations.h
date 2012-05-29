@@ -71,11 +71,16 @@ std::vector<itk::ImageRegion<2> > GetAllFullyValidRegions(const Mask* const mask
                                                           const itk::ImageRegion<2>& searchRegion,
                                                           const unsigned int patchRadius);
 
-/** Get a random fully valid patch in the specified region.*/
+/** Get a random fully valid patch in the specified region, if it exists.*/
 itk::ImageRegion<2> GetRandomValidPatchInRegion(const Mask* const mask,
                                                 const itk::ImageRegion<2>& searchRegion,
                                                 const unsigned int patchRadius,
-                                                const unsigned int maxNumberOfAttempts = 10);
+                                                const unsigned int maxNumberOfAttempts);
+
+/** Get a random fully valid patch in the specified region. Try harder than the above function - takes much longer.*/
+itk::ImageRegion<2> GetRandomValidPatchInRegion(const Mask* const mask,
+                                                const itk::ImageRegion<2>& searchRegion,
+                                                const unsigned int patchRadius);
 
 ////////////////// Templates ////////////////
 template <typename TImage>

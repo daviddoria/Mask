@@ -284,7 +284,46 @@ itk::ImageRegion<2> GetRandomValidPatchInRegion(const Mask* const mask,
     numberOfAttempts++;
     if(numberOfAttempts > maxNumberOfAttempts)
     {
+      // for now, return the failure situation without trying hard. See if this is the bottleneck.
+      itk::Size<2> regionSize = {{0,0}};
+      region.SetSize(regionSize);
+      return region;
+    }
+  } while(!(mask->GetLargestPossibleRegion().IsInside(region) && mask->IsValid(region)));
+
+  return region;
+}
+
+
+itk::ImageRegion<2> GetRandomValidPatchInRegion(const Mask* const mask,
+                                                const itk::ImageRegion<2>& searchRegion,
+                                                const unsigned int patchRadius)
+{
+  unsigned int numberOfAttempts = 0;
+
+  itk::Size<2> patchSize = {{patchRadius * 2 + 1, patchRadius * 2 + 1}};
+  itk::ImageRegion<2> region;
+  region.SetSize(patchSize);
+
+  unsigned int maxRandomAttemps = 10;
+  do
+  {
+    int randX = Helpers::RandomInt(searchRegion.GetIndex()[0],
+                                   searchRegion.GetIndex()[0] + searchRegion.GetSize()[0] - 1);
+
+    int randY = Helpers::RandomInt(searchRegion.GetIndex()[1],
+                                   searchRegion.GetIndex()[1] + searchRegion.GetSize()[1] - 1);
+
+    itk::Index<2> randomIndex = {{randX, randY}};
+    //std::cout << "RandomIndex: " << randomIndex << std::endl;
+    region.SetIndex(randomIndex);
+
+    numberOfAttempts++;
+    if(numberOfAttempts > maxRandomAttemps)
+    {
       //std::cout << "Searching all patches in region for a valid patch..." << std::endl;
+
+      // This function is relatively slow.
       std::vector<itk::ImageRegion<2> > allRegions = GetAllFullyValidRegions(mask, searchRegion, patchRadius);
       if(allRegions.size() == 0) // There are actually no valid regions in this searchRegion
       {

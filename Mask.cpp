@@ -283,7 +283,7 @@ bool Mask::IsValid(const itk::ImageRegion<2>& region) const
 {
   // If any of the pixels in the region are invalid, the region is invalid.
 
-  itk::ImageRegionConstIterator<Mask> maskIterator(this, region);
+  itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(this, region);
 
   while(!maskIterator.IsAtEnd())
     {
