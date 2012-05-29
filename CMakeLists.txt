@@ -19,9 +19,10 @@ INCLUDE(${VTK_USE_FILE})
 FIND_PACKAGE(ITK REQUIRED)
 INCLUDE(${ITK_USE_FILE})
 
-if(BuildTests)
+SET(Mask_BuildTests ON CACHE STRING "Build Mask tests?" FORCE)
+if(Mask_BuildTests)
   add_subdirectory(Tests)
-endif(BuildTests)
+endif(Mask_BuildTests)
 
 #add_library(Mask Mask.cpp MaskOperations.cpp MaskQt.cpp)
 add_library(Mask Mask.cpp MaskOperations.cpp)

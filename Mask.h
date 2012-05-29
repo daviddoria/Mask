@@ -78,7 +78,10 @@ public:
   /** Determine if a pixel is a hole pixel.*/
   bool IsHole(const itk::Index<2>& index) const;
 
+  /** Determine if a value matches the mask's hole value.*/
   bool IsHoleValue(const unsigned char value) const;
+
+  /** Determine if a value matches the mask's valid value.*/
   bool IsValidValue(const unsigned char value) const;
   
   /** Determine if an entire region consists of hole pixels.*/
@@ -90,9 +93,12 @@ public:
   /** Determine if a pixel is valid.*/
   bool IsValid(const itk::Index<2>& index) const;
 
-  /** Create a binary image where the hole pixels are white and other pixels are black.*/
+  /** Create a binary image of holes and valid pixels.*/
   typedef itk::Image<unsigned char, 2> UnsignedCharImageType;
-  void CreateBinaryHoleImage(UnsignedCharImageType* const binaryHoleImage);
+  void CreateBinaryImage(UnsignedCharImageType* const image, const unsigned char holeColor,
+                         const unsigned char validColor);
+  void CreateImage(UnsignedCharImageType* const image, const unsigned char holeColor,
+                         const unsigned char validColor, const unsigned char otherColor);
 
   /** Invert the mask by switching the hole and valid pixel values.*/
   void Invert();
@@ -137,14 +143,19 @@ public:
   template <typename TImage>
   void CopyHolesFromValue(const TImage* const inputImage, const unsigned int value);
 
+  enum PixelTypeEnum {HOLE, VALID};
+  
   /** Create valid pixels from specified pixels in an image.*/
   template <typename TImage>
   void CopyValidPixelsFromValue(const TImage* const inputImage, const unsigned int value);
   
   /** Find the boundary of the Mask.*/
   typedef itk::Image<unsigned char, 2> BoundaryImageType;
-  void FindBoundary(BoundaryImageType* const boundary, const BoundaryImageType::PixelType& value = 255) const;
-  void FindBoundaryInRegion(const itk::ImageRegion<2>& region, BoundaryImageType* const boundary, const BoundaryImageType::PixelType& value = 255) const;
+  void FindBoundary(BoundaryImageType* const boundary, const PixelTypeEnum& whichSideOfBoundary,
+                    const BoundaryImageType::PixelType& outputBoundaryPixelValue = 255) const;
+  void FindBoundaryInRegion(const itk::ImageRegion<2>& region, BoundaryImageType* const boundary,
+                            const PixelTypeEnum& whichSideOfBoundary,
+                            const BoundaryImageType::PixelType& outputBoundaryPixelValue = 255) const;
 
   /** Recolor the hole pixels in 'image' a specified 'color'.*/
   template<typename TImage, typename TColor>
@@ -213,6 +224,9 @@ public:
   
   /** Count hole pixels in the whole mask.*/
   unsigned int CountHolePixels() const;
+
+  bool HasHolePixels() const;
+  bool HasHolePixels(const itk::ImageRegion<2>& region) const;
 
   /** Count valid pixels in a region.*/
   unsigned int CountValidPixels(const itk::ImageRegion<2>& region) const;

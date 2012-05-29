@@ -152,6 +152,23 @@ unsigned int Mask::CountHolePixels(const itk::ImageRegion<2>& region) const
   return GetHolePixelsInRegion(region).size();
 }
 
+bool Mask::HasHolePixels() const
+{
+  return HasHolePixels(this->GetLargestPossibleRegion());
+}
+
+bool Mask::HasHolePixels(const itk::ImageRegion<2>& region) const
+{
+  if(CountHolePixels(region) > 0)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
 std::vector<itk::Index<2> > Mask::GetHolePixels() const
 {
   return GetHolePixelsInRegion(this->GetLargestPossibleRegion());
@@ -423,7 +440,7 @@ void Mask::CopyHolesFrom(const Mask* const inputMask)
 void Mask::ExpandHole(const unsigned int kernelRadius)
 {
   UnsignedCharImageType::Pointer binaryHoleImage = UnsignedCharImageType::New();
-  this->CreateBinaryHoleImage(binaryHoleImage);
+  this->CreateBinaryImage(binaryHoleImage, 255, 0);
 
 //   std::cout << "binaryHoleImage: " << std::endl;
 //   ITKHelpers::PrintImage(binaryHoleImage.GetPointer());
@@ -449,7 +466,7 @@ void Mask::ExpandHole(const unsigned int kernelRadius)
 void Mask::ShrinkHole(const unsigned int kernelRadius)
 {
   UnsignedCharImageType::Pointer binaryHoleImage = UnsignedCharImageType::New();
-  this->CreateBinaryHoleImage(binaryHoleImage);
+  this->CreateBinaryImage(binaryHoleImage, 255, 0);
 
 //   std::cout << "binaryHoleImage: " << std::endl;
 //   ITKHelpers::PrintImage(binaryHoleImage.GetPointer());
@@ -472,95 +489,107 @@ void Mask::ShrinkHole(const unsigned int kernelRadius)
   this->CopyValidPixelsFromValue(erodeFilter->GetOutput(), 0);
 }
 
-void Mask::CreateBinaryHoleImage(UnsignedCharImageType* const binaryHoleImage)
+void Mask::CreateImage(UnsignedCharImageType* const image, const unsigned char holeColor,
+                            const unsigned char validColor, const unsigned char otherColor)
 {
-  binaryHoleImage->SetRegions(this->GetLargestPossibleRegion());
-  binaryHoleImage->Allocate();
+  image->SetRegions(this->GetLargestPossibleRegion());
+  image->Allocate();
 
-  itk::ImageRegionIterator<UnsignedCharImageType> binaryImageIterator(binaryHoleImage, binaryHoleImage->GetLargestPossibleRegion());
-  // This should result in a white hole on a black background
+  itk::ImageRegionIterator<UnsignedCharImageType> binaryImageIterator(image,
+                                                                      image->GetLargestPossibleRegion());
+
   while(!binaryImageIterator.IsAtEnd())
     {
     if(this->IsHole(binaryImageIterator.GetIndex()))
       {
-      //std::cout << "Hole pixel." << std::endl;
-      binaryImageIterator.Set(255);
+      binaryImageIterator.Set(holeColor);
+      }
+    else if(this->IsValid(binaryImageIterator.GetIndex()))
+      {
+      binaryImageIterator.Set(validColor);
       }
     else
       {
-      binaryImageIterator.Set(0);
+      binaryImageIterator.Set(otherColor);
       }
     ++binaryImageIterator;
     }
-
-//   std::cout << "CreateBinaryHoleImage()::binaryHoleImage: " << std::endl;
-//   ITKHelpers::PrintImage(binaryHoleImage);
 }
 
-void Mask::FindBoundaryInRegion(const itk::ImageRegion<2>& region, BoundaryImageType* const boundaryImage, const BoundaryImageType::PixelType& value) const
+void Mask::CreateBinaryImage(UnsignedCharImageType* const image, const unsigned char holeColor,
+                            const unsigned char validColor)
 {
-  // TODO: Make this only compute the boundary in the specified 'region'. Maybe the binary image needs to be computed
-  // in a slightly dilated version of the region?
+  CreateImage(image, holeColor, validColor, validColor);
+}
 
-  // Compute the "outer" boundary of the region to fill. That is,
-  // we want the boundary pixels to be in the source region.
-
-  // Create a binary image (throw away the "dont use" pixels)
-  Mask::Pointer holeOnly = Mask::New();
-  holeOnly->DeepCopyFrom(this);
-
-  itk::ImageRegionIterator<Mask> maskIterator(holeOnly, holeOnly->GetLargestPossibleRegion());
-
-  // This should result in a white hole on a black background
-  while(!maskIterator.IsAtEnd())
-    {
-    itk::Index<2> currentPixel = maskIterator.GetIndex();
-    if(!holeOnly->IsHole(currentPixel))
-      {
-      holeOnly->SetPixel(currentPixel, holeOnly->GetValidValue());
-      }
-    ++maskIterator;
-    }
+void Mask::FindBoundaryInRegion(const itk::ImageRegion<2>& region, BoundaryImageType* const boundaryImage,
+                                const PixelTypeEnum& whichSideOfBoundary,
+                                const BoundaryImageType::PixelType& outputBoundaryPixelValue) const
+{
+  Mask::Pointer extractedRegionMask = Mask::New();
+  extractedRegionMask->SetRegions(region);
+  extractedRegionMask->Allocate();
+  ITKHelpers::CopyRegion(this, extractedRegionMask.GetPointer(), region, region);
 
   //HelpersOutput::WriteImageConditional<Mask>(holeOnly, "Debug/FindBoundary.HoleOnly.mha", this->DebugImages);
   //HelpersOutput::WriteImageConditional<Mask>(holeOnly, "Debug/FindBoundary.HoleOnly.png", this->DebugImages);
 
-  // Since the hole is white, we want the foreground value of the contour filter to be black. This means that the boundary will
+  // Since the hole is white, we want the foreground value of the contour filter to be black.
+  // This means that the boundary will
   // be detected in the black pixel region, which is on the outside edge of the hole like we want. However,
   // The BinaryContourImageFilter will change all non-boundary pixels to the background color,
-  // so the resulting output will be inverted - the boundary pixels will be black and the non-boundary pixels will be white.
+  // so the resulting output will be inverted - the boundary pixels will be black and the
+  // non-boundary pixels will be white.
 
   // Find the boundary
-  typedef itk::BinaryContourImageFilter <Mask, Mask> binaryContourImageFilterType;
+  typedef itk::BinaryContourImageFilter<Mask, Mask> binaryContourImageFilterType;
   binaryContourImageFilterType::Pointer binaryContourFilter = binaryContourImageFilterType::New();
-  binaryContourFilter->SetInput(holeOnly);
+  binaryContourFilter->SetInput(this);
   binaryContourFilter->SetFullyConnected(true);
-  binaryContourFilter->SetForegroundValue(holeOnly->GetValidValue());
-  binaryContourFilter->SetBackgroundValue(holeOnly->GetHoleValue());
+
+  unsigned char foregroundValue;
+  unsigned char backgroundValue;
+  if(whichSideOfBoundary == VALID)
+  {
+    // we want the boundary pixels to be in the valid region.
+    foregroundValue = this->GetValidValue();
+    backgroundValue = this->GetHoleValue();
+  }
+  else if(whichSideOfBoundary == HOLE)
+  {
+    // we want the boundary pixels to be in the hole region.
+    foregroundValue = this->GetHoleValue();
+    backgroundValue = this->GetValidValue();
+  }
+  else
+  {
+    throw std::runtime_error("An invalid side of the boundary was requested.");
+  }
+
+  binaryContourFilter->SetForegroundValue(foregroundValue);
+  binaryContourFilter->SetBackgroundValue(backgroundValue);
   binaryContourFilter->Update();
 
-//   OutputHelpers::WriteImageConditional<Mask>(binaryContourFilter->GetOutput(),
-//                                              "Debug/FindBoundary.Boundary.mha", this->DebugImages);
-//   OutputHelpers::WriteImageConditional<Mask>(binaryContourFilter->GetOutput(),
-//                                              "Debug/FindBoundary.Boundary.png", this->DebugImages);
+  binaryContourFilter->GetOutput()->CopyInformationFrom(this);
+  
 
-  // Since we want to interpret non-zero pixels as boundary pixels, we must invert the image.
-  typedef itk::InvertIntensityImageFilter<Mask> InvertIntensityImageFilterType;
-  InvertIntensityImageFilterType::Pointer invertIntensityFilter = InvertIntensityImageFilterType::New();
-  invertIntensityFilter->SetInput(binaryContourFilter->GetOutput());
-  invertIntensityFilter->SetMaximum(255);
-  invertIntensityFilter->Update();
-
-  //this->BoundaryImage = binaryContourFilter->GetOutput();
-  //this->BoundaryImage->Graft(binaryContourFilter->GetOutput());
-
-  ITKHelpers::DeepCopy(invertIntensityFilter->GetOutput(), boundaryImage);
-
+  if(whichSideOfBoundary == VALID)
+  {
+    // CreateBinaryImage(holeColor, validColor)
+    binaryContourFilter->GetOutput()->CreateBinaryImage(boundaryImage, 0, outputBoundaryPixelValue);
+  }
+  else if(whichSideOfBoundary == HOLE)
+  {
+    binaryContourFilter->GetOutput()->CreateBinaryImage(boundaryImage, outputBoundaryPixelValue, 0);
+  }
+  
 }
 
-void Mask::FindBoundary(itk::Image<unsigned char, 2>* const boundaryImage, const BoundaryImageType::PixelType& value) const
+void Mask::FindBoundary(itk::Image<unsigned char, 2>* const boundaryImage, const PixelTypeEnum& whichSideOfBoundary,
+                        const BoundaryImageType::PixelType& outputBoundaryPixelValue) const
 {
-  FindBoundaryInRegion(this->GetLargestPossibleRegion(), boundaryImage, value);
+  FindBoundaryInRegion(this->GetLargestPossibleRegion(), boundaryImage,
+                       whichSideOfBoundary, outputBoundaryPixelValue);
 }
 
 /** Get a list of the valid neighbors of a pixel.*/
