@@ -715,7 +715,7 @@ void CopyInHoleRegion(const TImage* const input, TImage* const output, const Mas
   }
   
   itk::ImageRegionConstIterator<TImage> imageIterator(input, input->GetLargestPossibleRegion());
-  std::cout << "Hole value is " << static_cast<int>(mask->GetHoleValue()) << std::endl;
+  //std::cout << "Hole value is " << static_cast<int>(mask->GetHoleValue()) << std::endl;
   while(!imageIterator.IsAtEnd())
   {
     if(mask->IsHole(imageIterator.GetIndex()))
