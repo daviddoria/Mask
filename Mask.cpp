@@ -33,14 +33,64 @@
 #include "itkLabelShapeKeepNObjectsImageFilter.h"
 #include "itkRescaleIntensityImageFilter.h"
 
-Mask::Mask()
+Mask::Mask() : HoleValue(255), ValidValue(0)
 {
-  this->HoleValue = 255;
-  this->ValidValue = 0;
+
 }
 
 void Mask::Read(const std::string& filename)
 {
+  std::string extension = Helpers::GetFileExtension(filename);
+  if(extension != "mask")
+  {
+    std::stringstream ss;
+    ss << "Cannot read any file except .mask! Specified file was ." << extension;
+    throw std::runtime_error(ss.str());
+  }
+
+  //Create an input stream for file
+  std::ifstream fin(filename.c_str());
+
+  if(!fin )
+    {
+    throw std::runtime_error("File not found!");
+    }
+
+  std::string line;
+  std::stringstream linestream;
+
+  int holeValue;
+  int validValue;
+
+  std::string imageFileName;
+  getline(fin, line);
+  std::cout << "Line: " << line << std::endl;
+  linestream.clear();
+  linestream << line;
+  // Can't do this directly because HoleValue and ValidValue are unsigned char, which will only read one character.
+//   linestream >> this->HoleValue;
+//   linestream >> this->ValidValue;
+  linestream >> holeValue;
+  linestream >> validValue;
+  linestream >> imageFileName;
+
+  this->HoleValue = holeValue;
+  this->ValidValue = validValue;
+
+  std::string path = Helpers::GetPath(filename);
+  
+  std::cout << "Reading mask: HoleValue " << static_cast<int>(this->HoleValue)
+            << " ValidValue: " << static_cast<int>(this->ValidValue) << std::endl;
+
+  std::string fullImageFileName = path + imageFileName;
+  
+  ReadFromImage(fullImageFileName);
+}
+
+void Mask::ReadFromImage(const std::string& filename)
+{
+  std::cout << "Reading mask from image: " << filename << std::endl;
+  
   // Ensure the input image can be interpreted as a mask.
   {
   typedef itk::VectorImage<float, 2> TestImageType;

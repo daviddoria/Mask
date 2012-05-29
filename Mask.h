@@ -227,6 +227,9 @@ public:
 
   /** Read the mask from a file.*/
   void Read(const std::string& filename);
+  
+  /** Read the mask from an image file.*/
+  void ReadFromImage(const std::string& filename);
 
   /** Mark the pixel as a hole.*/
   void MarkAsHole(const itk::Index<2>& pixel);
