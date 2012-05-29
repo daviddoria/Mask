@@ -472,10 +472,12 @@ void CopyPatchIntoImage(const TImage* const patch, TImage* const image, const Ma
 template<typename TImage>
 typename TypeTraits<typename TImage::PixelType>::LargerType AverageInRegionMasked(const TImage* const image,
                                                                                   const Mask* const mask,
-                                                                            const itk::ImageRegion<2>& region)
+                                                                                  const itk::ImageRegion<2>& region)
 {
   typename itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(mask, region);
+
   std::vector<typename TImage::PixelType> pixels;
+
   while(!maskIterator.IsAtEnd())
     {
     if(mask->IsValid(maskIterator.GetIndex()))
@@ -490,7 +492,51 @@ typename TypeTraits<typename TImage::PixelType>::LargerType AverageInRegionMaske
   return Average(pixels);
 }
 
+template<typename TImage>
+typename TImage::PixelType AverageValidNeighborValue(const TImage* const image, const Mask* const mask,
+                                                     const itk::Index<2>& pixel)
+{
+  std::vector<itk::Index<2> > neighborIndices = ITKHelpers::Get8NeighborsInRegion(image->GetLargestPossibleRegion(),
+                                                                                  pixel);
 
+  std::vector<typename TImage::PixelType> pixels;
+
+  for(unsigned int i = 0; i < neighborIndices.size(); ++i)
+    {
+    if(mask->IsValid(neighborIndices[i]))
+      {
+      pixels.push_back(image->GetPixel(neighborIndices[i]));
+      }
+    }
+
+  //using Statistics::Average;
+  using ITKStatistics::Average;
+
+  return Average(pixels);
+}
+
+template<typename TImage>
+typename TImage::PixelType AverageHoleNeighborValue(const TImage* const image, const Mask* const mask,
+                                                      const itk::Index<2>& pixel)
+{
+  std::vector<itk::Index<2> > neighborIndices = ITKHelpers::Get8NeighborsInRegion(image->GetLargestPossibleRegion(),
+                                                                                  pixel);
+
+  std::vector<typename TImage::PixelType> pixels;
+
+  for(unsigned int i = 0; i < neighborIndices.size(); ++i)
+    {
+    if(mask->IsHole(neighborIndices[i]))
+      {
+      pixels.push_back(image->GetPixel(neighborIndices[i]));
+      }
+    }
+
+  //using Statistics::Average;
+  using ITKStatistics::Average;
+
+  return Average(pixels);
+}
 
 /** Compute the average of all unmasked pixels in a region.*/
 template<typename TImage>

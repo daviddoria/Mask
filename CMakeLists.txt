@@ -23,5 +23,6 @@ if(BuildTests)
   add_subdirectory(Tests)
 endif(BuildTests)
 
-add_library(Mask Mask.cpp MaskOperations.cpp MaskQt.cpp)
+#add_library(Mask Mask.cpp MaskOperations.cpp MaskQt.cpp)
+add_library(Mask Mask.cpp MaskOperations.cpp)
 target_link_libraries(Mask ITKHelpers)

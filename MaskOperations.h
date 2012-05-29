@@ -121,13 +121,13 @@ typename TImage::PixelType AverageHoleValue(const TImage* const image, const Mas
 
 /** Get the average value of the non-masked neighbors of a pixel. */
 template<typename TImage>
-typename TImage::PixelType AverageNonMaskedNeighborValue(const TImage* const image, const Mask* const mask,
-                                                         const itk::Index<2>& pixel);
+typename TImage::PixelType AverageValidNeighborValue(const TImage* const image, const Mask* const mask,
+                                                     const itk::Index<2>& pixel);
 
 /** Get the average value of the masked neighbors of a pixel. */
 template<typename TImage>
-typename TImage::PixelType AverageMaskedNeighborValue(const TImage* const image, const Mask* const mask,
-                                                      const itk::Index<2>& pixel);
+typename TImage::PixelType AverageHoleNeighborValue(const TImage* const image, const Mask* const mask,
+                                                    const itk::Index<2>& pixel);
 
 /** Get the average value of the masked neighbors of a pixel. */
 template<typename TImage>
