@@ -64,7 +64,7 @@ void Mask::Read(const std::string& filename)
 
   std::string imageFileName;
   getline(fin, line);
-  std::cout << "Line: " << line << std::endl;
+
   linestream.clear();
   linestream << line;
   // Can't do this directly because HoleValue and ValidValue are unsigned char, which will only read one character.
