@@ -698,11 +698,21 @@ void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const fl
 template <class TImage>
 void CopyInHoleRegion(const TImage* const input, TImage* const output, const Mask* const mask)
 {
-  if(input->GetLargestPossibleRegion().GetSize() != output->GetLargestPossibleRegion().GetSize())
+  // It is sometimes desired to copy the hole pixels from an image into the corresponding pixels
+  // in a larger image, so we do not do the following.
+//   if(input->GetLargestPossibleRegion().GetSize() != output->GetLargestPossibleRegion().GetSize())
+//   {
+//     std::stringstream ss;
+//     ss << "Input size (" << input->GetLargestPossibleRegion().GetSize() << ") must match output size ("
+//        << output->GetLargestPossibleRegion().GetSize() << ")";
+//     throw std::runtime_error(ss.str());
+//   }
+
+  if(!output->GetLargestPossibleRegion().IsInside(input->GetLargestPossibleRegion()))
   {
     std::stringstream ss;
-    ss << "Input size (" << input->GetLargestPossibleRegion().GetSize() << ") must match output size ("
-       << output->GetLargestPossibleRegion().GetSize() << ")";
+    ss << "Input is not smaller than output! Input: " << input->GetLargestPossibleRegion().GetSize() 
+       << " output: " << output->GetLargestPossibleRegion().GetSize();
     throw std::runtime_error(ss.str());
   }
 
