@@ -1,2 +1,5 @@
-add_executable(MaskTests Tests.cpp)
-target_link_libraries(MaskTests ITKHelpers Mask)
+add_executable(TestMask TestMask.cpp)
+target_link_libraries(TestMask Mask)
+
+add_executable(TestMaskOperations TestMaskOperations.cpp)
+target_link_libraries(TestMaskOperations Mask)
