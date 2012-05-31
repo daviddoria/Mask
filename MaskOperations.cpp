@@ -148,38 +148,40 @@ itk::ImageRegion<2> RandomValidRegion(const Mask* const mask, const unsigned int
   return randomRegion;
 }
 
-itk::ImageRegion<2> ComputeBoundingBox(const Mask* const mask)
+itk::ImageRegion<2> ComputeHoleBoundingBox(const Mask* const mask)
 {
-  itk::ImageRegionConstIterator<Mask> imageIterator(mask, mask->GetLargestPossibleRegion());
+  itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(mask, mask->GetLargestPossibleRegion());
 
+  // Initialize backwards
   itk::Index<2> min = {{mask->GetLargestPossibleRegion().GetSize()[0], mask->GetLargestPossibleRegion().GetSize()[1]}};
   itk::Index<2> max = {{0, 0}};
 
-  while(!imageIterator.IsAtEnd())
+  while(!maskIterator.IsAtEnd())
     {
-    if(imageIterator.Get())
+    itk::Index<2> currentIndex = maskIterator.GetIndex();
+    if(mask->IsHole(currentIndex))
     {
-      if(imageIterator.GetIndex()[0] < min[0])
+      if(currentIndex[0] < min[0])
       {
-        min[0] = imageIterator.GetIndex()[0];
+        min[0] = currentIndex[0];
       }
-      if(imageIterator.GetIndex()[1] < min[1])
+      if(currentIndex[1] < min[1])
       {
-        min[1] = imageIterator.GetIndex()[1];
+        min[1] = currentIndex[1];
       }
-      if(imageIterator.GetIndex()[0] > max[0])
+      if(currentIndex[0] > max[0])
       {
-        max[0] = imageIterator.GetIndex()[0];
+        max[0] = currentIndex[0];
       }
-      if(imageIterator.GetIndex()[1] > max[1])
+      if(currentIndex[1] > max[1])
       {
-        max[1] = imageIterator.GetIndex()[1];
+        max[1] = currentIndex[1];
       }
     }
-    ++imageIterator;
+    ++maskIterator;
     }
 
-  itk::Size<2> size = {{max[0] - min[0], max[1] - min[1]}};
+  itk::Size<2> size = {{max[0] - min[0] + 1, max[1] - min[1] + 1}}; // The +1's are fencepost error correction
   itk::ImageRegion<2> region(min, size);
   return region;
 }
