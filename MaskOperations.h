@@ -56,7 +56,7 @@ itk::ImageRegion<2> RandomRegionInsideHole(const Mask* const mask, const unsigne
 itk::ImageRegion<2> RandomValidRegion(const Mask* const mask, const unsigned int halfWidth);
 
 /** Compute the bounding box of the mask. */
-itk::ImageRegion<2> ComputeBoundingBox(const Mask* const mask);
+itk::ImageRegion<2> ComputeHoleBoundingBox(const Mask* const mask);
 
 /** Look from a pixel across the hole in a specified direction and return the pixel that exists on the other side of the hole. */
 itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel,

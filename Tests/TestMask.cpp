@@ -1,5 +1,4 @@
 #include "Mask.h"
-#include "MaskOperations.h"
 
 #include "ITKHelpers/ITKHelpers.h"
 
@@ -57,7 +56,7 @@ void TestFindBoundaryInRegion()
     ITKHelpers::WriteImage(boundaryImage.GetPointer(), "boundary_A_hole.png");
     }
   }
-  
+
   // Test with 255=hole
   {
     Mask::Pointer mask = Mask::New();

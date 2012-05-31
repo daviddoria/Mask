@@ -78,19 +78,19 @@ void Mask::Read(const std::string& filename)
   this->ValidValue = validValue;
 
   std::string path = Helpers::GetPath(filename);
-  
+
   std::cout << "Reading mask: HoleValue " << static_cast<int>(this->HoleValue)
             << " ValidValue: " << static_cast<int>(this->ValidValue) << std::endl;
 
   std::string fullImageFileName = path + imageFileName;
-  
+
   ReadFromImage(fullImageFileName);
 }
 
 void Mask::ReadFromImage(const std::string& filename)
 {
   std::cout << "Reading mask from image: " << filename << std::endl;
-  
+
   // Ensure the input image can be interpreted as a mask.
   {
   typedef itk::VectorImage<float, 2> TestImageType;
@@ -116,7 +116,7 @@ void Mask::ReadFromImage(const std::string& filename)
 
   unsigned char tempHoleValue = this->HoleValue;
   unsigned char tempValidValue = this->ValidValue;
-  
+
   DeepCopyFrom(imageReader->GetOutput());
 
   this->HoleValue = tempHoleValue;
@@ -146,7 +146,7 @@ unsigned int Mask::CountBoundaryPixels() const
 {
   return CountBoundaryPixels(this->GetLargestPossibleRegion());
 }
-  
+
 unsigned int Mask::CountHolePixels(const itk::ImageRegion<2>& region) const
 {
   return GetHolePixelsInRegion(region).size();
@@ -458,7 +458,7 @@ void Mask::ExpandHole(const unsigned int kernelRadius)
 
 //   std::cout << "dilateFilter output: " << std::endl;
 //   ITKHelpers::PrintImage(dilateFilter->GetOutput());
-  
+
   // There will now be more hole pixels than there were previously. Copy them into the mask.
   this->CopyHolesFromValue(dilateFilter->GetOutput(), 255);
 }
@@ -470,7 +470,7 @@ void Mask::ShrinkHole(const unsigned int kernelRadius)
 
 //   std::cout << "binaryHoleImage: " << std::endl;
 //   ITKHelpers::PrintImage(binaryHoleImage.GetPointer());
-  
+
   typedef itk::FlatStructuringElement<2> StructuringElementType;
   StructuringElementType::RadiusType radius;
   radius.Fill(kernelRadius); // This is correct that the RadiusType expects the region radius, not the side length.
@@ -484,7 +484,7 @@ void Mask::ShrinkHole(const unsigned int kernelRadius)
 
 //   std::cout << "erodeFilter output: " << std::endl;
 //   ITKHelpers::PrintImage(erodeFilter->GetOutput());
-  
+
   // There will now be more valid pixels than there were previously. Copy them into the mask.
   this->CopyValidPixelsFromValue(erodeFilter->GetOutput(), 0);
 }
@@ -571,7 +571,7 @@ void Mask::FindBoundaryInRegion(const itk::ImageRegion<2>& region, BoundaryImage
   binaryContourFilter->Update();
 
   binaryContourFilter->GetOutput()->CopyInformationFrom(this);
-  
+
 
   if(whichSideOfBoundary == VALID)
   {
@@ -582,7 +582,7 @@ void Mask::FindBoundaryInRegion(const itk::ImageRegion<2>& region, BoundaryImage
   {
     binaryContourFilter->GetOutput()->CreateBinaryImage(boundaryImage, outputBoundaryPixelValue, 0);
   }
-  
+
 }
 
 void Mask::FindBoundary(itk::Image<unsigned char, 2>* const boundaryImage, const PixelTypeEnum& whichSideOfBoundary,
