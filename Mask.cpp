@@ -255,7 +255,7 @@ std::vector<itk::Index<2> > Mask::GetHolePixelsInRegion(itk::ImageRegion<2> regi
 
   std::vector<itk::Index<2> > holePixels;
 
-  typename itk::ImageRegionConstIterator<Mask> iterator(this, region);
+  itk::ImageRegionConstIterator<Mask> iterator(this, region);
 
   while(!iterator.IsAtEnd())
     {
