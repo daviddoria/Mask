@@ -6,24 +6,37 @@ git submodule update --init --recursive
 
 to get the code in ITKHelpers/ and ITKHelpers/Helpers/ that this code relies on.
 
+If this command gives you trouble (known problem with mysysgit), instead of
+
+git clone ...
+
+use
+
+git clone --recursive ...
+
+and then no "git submodule update ..." is required.
+
 Building
 --------
 This repository does not depend on any external libraries. The only caveat is that it depends
-on c++0x/11 parts of the c++ language. For Linux, this means it must be built with the flag
-gnu++0x. For Windows, we are working on finding the comparable solution/flag.
+on c++0x/11 parts of the c++ language used in the Helpers sub-sub-module. For Linux, this means
+it must be built with the flag
+gnu++0x. For Windows (Visual Studio 2010), nothing special must be done.
 
 Usage
 -----
 There are two main files in this repository - Mask.h and MaskOperations.h.
 
-Mask.h contains a Mask class. This class is intended to indicate pixels in an image that are "holes", and those that are "valid".
+Mask.h contains a Mask class. This class is intended to indicate pixels in an image that are "holes",
+and those that are "valid".
 
-A custom file format has been developed to make using existing mask images with this class very easy. Simply create a file with the extension
-.mask, and in it place three things:
+A custom file format has been developed to make using existing mask images with this class very easy.
+Simply create a file with the extension .mask, and in it place three things:
 
 holeValue validValue maskFileName
 
-Consider that you have a mask.png with valid pixels indicated in white and hole pixels indicated in black. Create a file mymask.mask and in it place
+Consider that you have a mask.png with valid pixels indicated in white and hole pixels indicated in black.
+Create a file mymask.mask and in it place
 
 0 255 mask.png
 
@@ -34,5 +47,5 @@ mask->Read("mymask.mask");
 
 and everything is setup appropriately.
 
-In addition to the Mask class, there is a MaskOperations namespace that contains many functions for performing operations where it is important
-to consider masked pixels.
+In addition to the Mask class, there is a MaskOperations namespace that contains many functions for
+performing operations where it is important to consider masked pixels.
