@@ -20,7 +20,7 @@ INCLUDE(${VTK_USE_FILE})
 FIND_PACKAGE(ITK REQUIRED)
 INCLUDE(${ITK_USE_FILE})
 
-SET(Mask_BuildTests ON CACHE STRING "Build Mask tests?" FORCE)
+SET(Mask_BuildTests ON CACHE BOOL "Build Mask tests?" FORCE)
 if(Mask_BuildTests)
   add_subdirectory(Tests)
 endif(Mask_BuildTests)
