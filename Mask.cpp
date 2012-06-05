@@ -255,7 +255,7 @@ std::vector<itk::Index<2> > Mask::GetHolePixelsInRegion(itk::ImageRegion<2> regi
 
   std::vector<itk::Index<2> > holePixels;
 
-  typename itk::ImageRegionConstIterator<Mask> iterator(this, region);
+  itk::ImageRegionConstIterator<Mask> iterator(this, region);
 
   while(!iterator.IsAtEnd())
     {
@@ -356,12 +356,12 @@ void Mask::Cleanup()
   float tolerance = 4;
   while(!maskIterator.IsAtEnd())
     {
-    if(fabs(maskIterator.Get() - this->ValidValue) < tolerance)
+    if(abs(maskIterator.Get() - this->ValidValue) < tolerance)
       {
       //std::cout << "Setting valid pixel to " << static_cast<unsigned int>(this->ValidValue) << std::endl;
       maskIterator.Set(this->ValidValue);
       }
-    else if(fabs(maskIterator.Get() - this->HoleValue) < tolerance)
+    else if(abs(maskIterator.Get() - this->HoleValue) < tolerance)
       {
       //std::cout << "Setting hole pixel to " << static_cast<unsigned int>(this->HoleValue) << std::endl;
       maskIterator.Set(this->HoleValue);

@@ -56,9 +56,9 @@ public:
                       Superclass::ImageDimension);
 
   /** Types derived from the Superclass */
-  typedef typename Superclass::IndexType IndexType;
+  typedef Superclass::IndexType IndexType;
 
-  typedef typename Superclass::IOPixelType IOPixelType;
+  typedef Superclass::IOPixelType IOPixelType;
 
   /** Tyepdef for the functor used to access a neighborhood of pixel
   * pointers. */
