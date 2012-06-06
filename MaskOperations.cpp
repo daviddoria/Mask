@@ -349,4 +349,51 @@ itk::ImageRegion<2> GetRandomValidPatchInRegion(const Mask* const mask,
   return region;
 }
 
+
+std::pair<itk::Index<2>, itk::Index<2> > IntersectLineWithHole(const std::vector<itk::Index<2> >& line,
+                                                               const Mask* const mask,
+                                                               bool &hasInteriorLine)
+{
+  // We want to find where the line enters the mask, and where it leaves the mask.
+  // This function assumes that the line starts outside the mask. Nothing is assumed
+  // about where the line ends (if it ends inside the mask, then there is no interior line).
+  // 'line' is an ordered vector of indices.
+  // We assume the hole is convex. Nothing will break if it is not, but the line that is computed goes "through" the mask, but may
+  // actually not be entirely contained within the hole if the hole is not convex.
+
+  std::pair<itk::Index<2>, itk::Index<2> > interiorLine; // (start pixel, end pixel)
+
+  unsigned int startPoints = 0;
+  unsigned int endPoints = 0;
+
+  // Loop over the pixels in the line. If one of them is outside the mask and its neighbor is inside the mask, this is an intersection.
+  for(unsigned int i = 0; i < line.size() - 1; i++) // loop to one before the end because we use the current and current+1 in the loop
+    {
+    if(mask->GetPixel(line[i]) == 0 && mask->GetPixel(line[i+1]) != 0) // Found entry point
+      {
+      interiorLine.first = line[i]; // We want to save the outside/valid/non-hole point. This is the first point (i) in the 'exit' case.
+      startPoints++;
+      }
+
+    if(mask->GetPixel(line[i]) != 0 && mask->GetPixel(line[i+1]) == 0) // Found exit point
+      {
+      interiorLine.second = line[i+1]; // We want to save the outside/valid/non-hole point. This is the second point (i+1) in the 'exit' case.
+      endPoints++;
+      }
+    }
+
+  // If there is exactly one entry and exactly 1 exit point, the interior line is well defined
+  if(startPoints == 1 && endPoints == 1)
+    {
+    hasInteriorLine = true;
+    }
+  else
+    {
+    hasInteriorLine = false;
+    }
+
+  // This is only valid if hasInteriorLine is true
+  return interiorLine;
+}
+
 } // end namespace

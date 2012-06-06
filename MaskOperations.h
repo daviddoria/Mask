@@ -159,6 +159,11 @@ template<typename TImage>
 void ClipInHole(TImage* const image, const Mask* const mask, const float min, const float max);
 
 
+/** Intersect a line with a hole. Return a pair containing the starting and ending points of the line intersection. */
+std::pair<itk::Index<2>, itk::Index<2> > IntersectLineWithHole(const std::vector<itk::Index<2> >& line,
+                                                               const Mask* const mask,
+                                                               bool &hasInteriorLine);
+
 } // end namespace
 
 #include "MaskOperations.hxx"
