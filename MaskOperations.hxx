@@ -509,10 +509,7 @@ typename TImage::PixelType AverageValidNeighborValue(const TImage* const image, 
       }
     }
 
-  //using Statistics::Average;
-  using ITKStatistics::Average;
-
-  return Average(pixels);
+  return Statistics::Average(pixels);
 }
 
 template<typename TImage>
@@ -532,10 +529,7 @@ typename TImage::PixelType AverageHoleNeighborValue(const TImage* const image, c
       }
     }
 
-  //using Statistics::Average;
-  using ITKStatistics::Average;
-
-  return Average(pixels);
+  return Statistics::Average(pixels);
 }
 
 /** Compute the average of all unmasked pixels in a region.*/
@@ -555,27 +549,30 @@ typename TypeTraits<typename TImage::PixelType>::LargerType VarianceInRegionMask
     ++maskIterator;
     }
 
-  return ITKStatistics::Variance(pixels);
+  return Statistics::Variance(pixels);
 }
 
-
-
 template<typename TImage>
-void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::ImageRegion<2>& region, const std::string& filename, const typename TImage::PixelType& holeColor)
+void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::ImageRegion<2>& region,
+                       const std::string& filename, const typename TImage::PixelType& holeColor)
 {
   typedef itk::RegionOfInterestImageFilter<TImage, TImage> RegionOfInterestImageFilterType;
-  typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
+  typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter =
+            RegionOfInterestImageFilterType::New();
   regionOfInterestImageFilter->SetRegionOfInterest(region);
   regionOfInterestImageFilter->SetInput(image);
   regionOfInterestImageFilter->Update();
 
   typedef itk::RegionOfInterestImageFilter<Mask, Mask> RegionOfInterestMaskFilterType;
-  typename RegionOfInterestMaskFilterType::Pointer regionOfInterestMaskFilter = RegionOfInterestMaskFilterType::New();
+  typename RegionOfInterestMaskFilterType::Pointer regionOfInterestMaskFilter =
+            RegionOfInterestMaskFilterType::New();
   regionOfInterestMaskFilter->SetRegionOfInterest(region);
   regionOfInterestMaskFilter->SetInput(mask);
   regionOfInterestMaskFilter->Update();
 
-  itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(), regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(),
+                                                 regionOfInterestImageFilter->GetOutput()->
+                                                 GetLargestPossibleRegion());
 
   while(!imageIterator.IsAtEnd())
     {
@@ -598,22 +595,27 @@ void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::I
 }
 
 template<typename TImage>
-void WriteMaskedRegionPNG(const TImage* const image, const Mask* mask, const itk::ImageRegion<2>& region, const std::string& filename,
-                       const typename TImage::PixelType& holeColor)
+void WriteMaskedRegionPNG(const TImage* const image, const Mask* mask,
+                          const itk::ImageRegion<2>& region, const std::string& filename,
+                          const typename TImage::PixelType& holeColor)
 {
   typedef itk::RegionOfInterestImageFilter<TImage, TImage> RegionOfInterestImageFilterType;
-  typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
+  typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter =
+            RegionOfInterestImageFilterType::New();
   regionOfInterestImageFilter->SetRegionOfInterest(region);
   regionOfInterestImageFilter->SetInput(image);
   regionOfInterestImageFilter->Update();
 
   typedef itk::RegionOfInterestImageFilter<Mask, Mask> RegionOfInterestMaskFilterType;
-  typename RegionOfInterestMaskFilterType::Pointer regionOfInterestMaskFilter = RegionOfInterestMaskFilterType::New();
+  typename RegionOfInterestMaskFilterType::Pointer regionOfInterestMaskFilter =
+            RegionOfInterestMaskFilterType::New();
   regionOfInterestMaskFilter->SetRegionOfInterest(region);
   regionOfInterestMaskFilter->SetInput(mask);
   regionOfInterestMaskFilter->Update();
 
-  itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(), regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(),
+                                                 regionOfInterestImageFilter->GetOutput()->
+                                                 GetLargestPossibleRegion());
 
   while(!imageIterator.IsAtEnd())
     {
@@ -632,7 +634,8 @@ void WriteMaskedRegionPNG(const TImage* const image, const Mask* mask, const itk
   ITKHelpers::RGBImageType::Pointer rgbImage = ITKHelpers::RGBImageType::New();
   //ITKHelpers::VectorImageToRGBImage(regionOfInterestImageFilter->GetOutput(), rgbImage.GetPointer());
 
-  typename itk::ImageFileWriter<ITKHelpers::RGBImageType>::Pointer writer = itk::ImageFileWriter<ITKHelpers::RGBImageType>::New();
+  typename itk::ImageFileWriter<ITKHelpers::RGBImageType>::Pointer writer =
+             itk::ImageFileWriter<ITKHelpers::RGBImageType>::New();
   writer->SetFileName(filename);
   writer->SetInput(rgbImage.GetPointer());
   writer->Update();
@@ -648,7 +651,8 @@ struct Contribution
 };
 
 template <typename TImage>
-void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const float blurVariance, TImage* const output)
+void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const float blurVariance,
+                TImage* const output)
 {
   // Create a Gaussian kernel
   typedef itk::GaussianOperator<float, 1> GaussianOperatorType;
@@ -658,7 +662,8 @@ void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const fl
   radius.Fill(20); // Make a length 41 kernel
 
   GaussianOperatorType gaussianOperator;
-  gaussianOperator.SetDirection(0); // It doesn't matter which direction we set - we will be interpreting the kernel as 1D (no direction)
+  // It doesn't matter which direction we set - we will be interpreting the kernel as 1D (no direction)
+  gaussianOperator.SetDirection(0); 
   gaussianOperator.SetVariance(blurVariance);
   gaussianOperator.CreateToRadius(radius);
 
