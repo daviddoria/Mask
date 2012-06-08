@@ -786,3 +786,13 @@ itk::ImageRegion<2> Mask::FindFirstValidPatch(const unsigned int patchRadius)
   itk::ImageRegion<2> dummyRegion;
   return dummyRegion;
 }
+
+void Mask::SetHole(const itk::Index<2>& index)
+{
+  this->SetPixel(index, this->HoleValue);
+}
+
+void Mask::SetValid(const itk::Index<2>& index)
+{
+  this->SetPixel(index, this->ValidValue);
+}

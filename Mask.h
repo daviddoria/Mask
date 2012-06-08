@@ -121,6 +121,12 @@ public:
   /** Specify which value should be considered valid.*/
   void SetValidValue(const unsigned char value);
 
+  /** Mark the pixel as a hole.*/
+  void SetHole(const itk::Index<2>& index);
+
+  /** Mark the pixel as valid.*/
+  void SetValid(const itk::Index<2>& index);
+
   /** Get the value that is considered a hole.*/
   unsigned char GetHoleValue() const;
 
