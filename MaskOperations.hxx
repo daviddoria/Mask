@@ -4,7 +4,6 @@
 // Custom
 #include "Mask.h"
 #include "ITKHelpers/ITKHelpers.h"
-#include "ITKHelpers/ITKStatistics.h"
 
 // ITK
 #include "itkBresenhamLine.h"
