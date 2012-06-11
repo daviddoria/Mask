@@ -786,4 +786,20 @@ void CopyInHoleRegion(const TImage* const input, TImage* const output, const Mas
   }
 }
 
+template<typename TImage>
+void SetHolePixelsToConstant(TImage* const image, const typename TImage::PixelType& value,
+                             const Mask* const mask)
+{
+  itk::ImageRegionIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
+  
+  while(!imageIterator.IsAtEnd())
+  {
+    if(mask->IsHole(imageIterator.GetIndex()))
+    {
+      imageIterator.Set(value);
+    }
+    ++imageIterator;
+  }
+}
+
 } // end namespace
