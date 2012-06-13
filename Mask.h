@@ -127,6 +127,9 @@ public:
   /** Mark the pixel as valid.*/
   void SetValid(const itk::Index<2>& index);
 
+  /** Mark the region as valid.*/
+  void SetValid(const itk::ImageRegion<2>& region);
+
   /** Get the value that is considered a hole.*/
   unsigned char GetHoleValue() const;
 
@@ -170,8 +173,9 @@ public:
   /** Change the hole pixels in 'image' to a specified 'holeValue'. 'holeValue' is not const because it might
    need to be modified if it is not provided or is invalid. */
   template<typename TImage>
-  void ApplyToImage(TImage* const image,
-                    typename TImage::PixelType holeValue = typename TImage::PixelType()) const;
+  void ApplyToScalarImage(TImage* const image,
+                          typename TImage::PixelType holeValue = itk::NumericTraits<typename TImage::PixelType>::ZeroValue()) const;
+                          //typename TImage::PixelType holeValue = typename TImage::PixelType()) const;
 
   /** Recolor the hole pixels in 'image' a specified 'color'.*/
   template<typename TImage, typename TColor>

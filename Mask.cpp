@@ -796,3 +796,14 @@ void Mask::SetValid(const itk::Index<2>& index)
 {
   this->SetPixel(index, this->ValidValue);
 }
+
+void Mask::SetValid(const itk::ImageRegion<2>& region)
+{
+  itk::ImageRegionIteratorWithIndex<Mask> maskIterator(this, region);
+
+  while(!maskIterator.IsAtEnd())
+    {
+    maskIterator.Set(this->ValidValue);
+    ++maskIterator;
+    }
+}
