@@ -97,7 +97,7 @@ void Mask::ApplyColorToImage(TImage* const image, const TColor& color) const
 
 
 template<typename TImage>
-void Mask::ApplyToImage(TImage* const image, typename TImage::PixelType holeValue) const
+void Mask::ApplyToScalarImage(TImage* const image, typename TImage::PixelType holeValue) const
 {
   if(image->GetLargestPossibleRegion() != this->GetLargestPossibleRegion())
     {
@@ -107,14 +107,6 @@ void Mask::ApplyToImage(TImage* const image, typename TImage::PixelType holeValu
     return;
     }
 
-  // If this condition fails, either the user has passed an invalid value or the default parameter value was used
-  // because the user did not pass a value at all.
-  if(holeValue.GetSize() != image->GetNumberOfComponentsPerPixel())
-  {
-    holeValue.SetSize(image->GetNumberOfComponentsPerPixel());
-    holeValue.Fill(0);
-  }
-  
   itk::ImageRegionConstIterator<Mask> maskIterator(this, this->GetLargestPossibleRegion());
 
   while(!maskIterator.IsAtEnd())

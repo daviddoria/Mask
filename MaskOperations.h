@@ -109,6 +109,10 @@ void CreatePatchImage(const TImage* const image, const itk::ImageRegion<2>& sour
 template<typename TImage>
 void AddConstantInHole(TImage* const image, const float value, const Mask* const maskImage);
 
+template<typename TImage>
+void SetHolePixelsToConstant(TImage* const image, const typename TImage::PixelType& value,
+                             const Mask* const maskImage);
+
 /** Return the highest value of the specified image out of the pixels under a specified BoundaryImage. */
 template<typename TImage>
 itk::Index<2> FindHighestValueInMaskedRegion(const TImage* const image, float& maxValue,
