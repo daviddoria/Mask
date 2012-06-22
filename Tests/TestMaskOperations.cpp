@@ -3,12 +3,32 @@
 
 #include "ITKHelpers/ITKHelpers.h"
 
-void TestComputeHoleBoundingBox();
+static void TestComputeHoleBoundingBox();
+static void TestInterpolateHole();
 
 int main( int argc, char ** argv )
 {
-  TestComputeHoleBoundingBox();
+  TestInterpolateHole();
+  //TestComputeHoleBoundingBox();
   return 0;
+}
+
+void TestInterpolateHole()
+{
+  itk::Index<2> corner = {{0,0}};
+  itk::Size<2> size = {{100,100}};
+  itk::ImageRegion<2> imageRegion(corner, size);
+  
+  Mask::Pointer mask = Mask::New();
+  mask->SetRegions(imageRegion);
+  mask->Allocate();
+
+  typedef itk::Image<float, 2> ImageType;
+  ImageType::Pointer image = ImageType::New();
+  image->SetRegions(imageRegion);
+  image->Allocate();
+  
+  MaskOperations::InterpolateHole(image.GetPointer(), mask);
 }
 
 void TestComputeHoleBoundingBox()

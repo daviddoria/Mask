@@ -12,6 +12,7 @@
 #include "itkImageRegionIterator.h"
 #include "itkLaplacianOperator.h"
 #include "itkMedianImageFilter.h"
+#include "itkSignedDanielssonDistanceMapImageFilter.h"
 
 namespace MaskOperations
 {
@@ -179,7 +180,65 @@ void AddNoiseInHole(TImage* const image, const Mask* const mask, const float noi
 template<typename TImage>
 void InterpolateHole(TImage* const image, const Mask* const mask)
 {
+  struct WeightedPixel
+  {
+    float Weight;
+    itk::Index<2> Pixel;
+    
+    WeightedPixel(const itk::Index<2>& pixel, const float weight)
+    {
+      Weight = weight;
+      Pixel = pixel;
+    }
+    
+    bool operator<(const WeightedPixel &other) const
+    {
+      if(Weight < other.Weight)
+      {
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    }
+  };
 
+  itk::ImageRegion<2> boundingBox = MaskOperations::ComputeHoleBoundingBox(mask);
+
+  typedef itk::SignedDanielssonDistanceMapImageFilter<TImage, ITKHelpersTypes::FloatScalarImageType>
+          SignedDanielssonDistanceMapImageFilterType;
+  typename SignedDanielssonDistanceMapImageFilterType::Pointer distanceMapFilter =
+           SignedDanielssonDistanceMapImageFilterType::New();
+  distanceMapFilter->SetInput(image);
+  distanceMapFilter->SetInsideIsPositive(true);
+  distanceMapFilter->GetOutput()->SetRequestedRegion(boundingBox);
+  distanceMapFilter->Update();
+
+  // the first element will be the one with the smallest value
+  std::priority_queue <WeightedPixel, std::vector<WeightedPixel> > queue;
+  
+  itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(mask, mask->GetLargestPossibleRegion());
+
+  while(!maskIterator.IsAtEnd())
+    {
+    if(mask->IsHole(maskIterator.GetIndex()))
+      {
+      WeightedPixel weightedPixel(maskIterator.GetIndex(),
+                                  distanceMapFilter->GetOutput()->GetPixel(maskIterator.GetIndex()));
+      queue.push(weightedPixel);
+      }
+
+    ++maskIterator;
+    }
+
+  // TODO: Do "Inverse Distance Weighting Interpolation" here
+  
+  while (!queue.empty())
+  {
+    WeightedPixel p = queue.top();   //print out the highest priority element
+    queue.pop();                   //remove the highest priority element
+  }
 }
 
 template<typename TImage>
