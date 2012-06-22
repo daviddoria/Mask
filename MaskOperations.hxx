@@ -64,7 +64,8 @@ void CopySourcePatchIntoHoleOfTargetRegion(const TImage* const sourceImage, TIma
 }
 
 template<typename TImage>
-void CreatePatchImage(const TImage* const image, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion,
+void CreatePatchImage(const TImage* const image, const itk::ImageRegion<2>& sourceRegion,
+                      const itk::ImageRegion<2>& targetRegion,
                       const Mask* const mask, TImage* const result)
 {
   // The input 'result' is expected to already be sized and initialized.
@@ -96,7 +97,8 @@ template<typename TImage>
 itk::Index<2> FindHighestValueInMaskedRegion(const TImage* const image, float& maxValue, const Mask* const maskImage)
 {
   //EnterFunction("FindHighestValueOnBoundary()");
-  // Return the location of the highest pixel in 'image' out of the non-zero pixels in 'boundaryImage'. Return the value of that pixel by reference.
+  // Return the location of the highest pixel in 'image' out of the non-zero pixels
+  // in 'boundaryImage'. Return the value of that pixel by reference.
 
   // Explicity find the maximum on the boundary
   maxValue = 0.0f; // priorities are non-negative, so anything better than 0 will win
@@ -222,7 +224,8 @@ void InterpolateThroughHole(TImage* const image, Mask* const mask, const itk::In
   std::cout << "First pixel in hole ID " << firstHolePixelIndex << std::endl;
     
   typename TImage::PixelType value1;
-  // Look for the last hole pixel, and set value1 to the one after it (the pixel on the valid side of the hole boundary)
+  // Look for the last hole pixel, and set value1 to the one after it
+  // (the pixel on the valid side of the hole boundary)
   unsigned int lastHolePixelIndex = 0;
   for(; pixelId < pixels.size(); ++pixelId)
     {
@@ -344,7 +347,8 @@ void MedianFilterInHole(TImage* const image, const Mask* const mask, const unsig
     {
     if(mask->IsHole(imageIterator.GetIndex()))
       {
-      std::cout << "Changing " << image->GetPixel(imageIterator.GetIndex()) << " to " << medianFilter->GetOutput()->GetPixel(imageIterator.GetIndex()) << std::endl;
+      std::cout << "Changing " << image->GetPixel(imageIterator.GetIndex()) << " to "
+                << medianFilter->GetOutput()->GetPixel(imageIterator.GetIndex()) << std::endl;
       imageIterator.Set(medianFilter->GetOutput()->GetPixel(imageIterator.GetIndex()));
       }
 
