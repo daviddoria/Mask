@@ -149,11 +149,12 @@ void AddNoiseInHole(TImage* const image, const Mask* const mask, const float noi
   * This function assumes one hole entry and one hole exit (i.e. the line between
   * p0 and p1 only intersects the hole twice). */
 template<typename TImage>
-void InteroplateThroughHole(TImage* const image, Mask* const mask, const itk::Index<2>& p0,
+void InterpolateThroughHole(TImage* const image, const Mask* const mask, const itk::Index<2>& p0,
                             const itk::Index<2>& p1, const unsigned int lineThickness = 0);
 
+/** Interpolate values in a hole. */
 template<typename TImage>
-void InteroplateLineBetweenPoints(TImage* const image, const itk::Index<2>& p0, const itk::Index<2>& p1);
+void InterpolateHole(TImage* const image, const Mask* const mask);
 
 /** Blur an image using all of its values but only replaced the pixel values with
   * the blurred values inside the hole. */

@@ -27,7 +27,8 @@
 namespace MaskOperations
 {
 
-itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel, const ITKHelpers::FloatVector2Type& inputDirection, const Mask* const mask)
+itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel,
+                                  const ITKHelpers::FloatVector2Type& inputDirection, const Mask* const mask)
 {
   if(!mask->IsValid(queryPixel))
     {
@@ -47,7 +48,8 @@ itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel, const ITKHelp
     }
   else
     {
-    // There is no requirement for the isophote to be pointing a particular orientation, so try to step along the negative isophote.
+    // There is no requirement for the isophote to be pointing a particular orientation,
+    // so try to step along the negative isophote.
     direction *= -1.0;
     nextPixelAlongVector = ITKHelpers::GetNextPixelAlongVector(queryPixel, direction);
     }
@@ -89,7 +91,8 @@ void ITKImageToVTKImageMasked(const ITKHelpers::FloatVectorImageType* const imag
   outputImage->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
 
   // Copy all of the input image pixels to the output image
-  itk::ImageRegionConstIteratorWithIndex<ITKHelpers::FloatVectorImageType> imageIterator(image,image->GetLargestPossibleRegion());
+  itk::ImageRegionConstIteratorWithIndex<ITKHelpers::FloatVectorImageType>
+         imageIterator(image,image->GetLargestPossibleRegion());
   imageIterator.GoToBegin();
 
   while(!imageIterator.IsAtEnd())
@@ -153,7 +156,8 @@ itk::ImageRegion<2> ComputeHoleBoundingBox(const Mask* const mask)
   itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(mask, mask->GetLargestPossibleRegion());
 
   // Initialize backwards
-  itk::Index<2> min = {{mask->GetLargestPossibleRegion().GetSize()[0], mask->GetLargestPossibleRegion().GetSize()[1]}};
+  itk::Index<2> min = {{mask->GetLargestPossibleRegion().GetSize()[0],
+                        mask->GetLargestPossibleRegion().GetSize()[1]}};
   itk::Index<2> max = {{0, 0}};
 
   while(!maskIterator.IsAtEnd())
@@ -358,7 +362,8 @@ std::pair<itk::Index<2>, itk::Index<2> > IntersectLineWithHole(const std::vector
   // This function assumes that the line starts outside the mask. Nothing is assumed
   // about where the line ends (if it ends inside the mask, then there is no interior line).
   // 'line' is an ordered vector of indices.
-  // We assume the hole is convex. Nothing will break if it is not, but the line that is computed goes "through" the mask, but may
+  // We assume the hole is convex. Nothing will break if it is not, but the line that is
+  // computed goes "through" the mask, but may
   // actually not be entirely contained within the hole if the hole is not convex.
 
   std::pair<itk::Index<2>, itk::Index<2> > interiorLine; // (start pixel, end pixel)
@@ -366,18 +371,23 @@ std::pair<itk::Index<2>, itk::Index<2> > IntersectLineWithHole(const std::vector
   unsigned int startPoints = 0;
   unsigned int endPoints = 0;
 
-  // Loop over the pixels in the line. If one of them is outside the mask and its neighbor is inside the mask, this is an intersection.
-  for(unsigned int i = 0; i < line.size() - 1; i++) // loop to one before the end because we use the current and current+1 in the loop
+  // Loop over the pixels in the line. If one of them is outside the mask and its neighbor
+  // is inside the mask, this is an intersection.
+
+  // loop to one before the end because we use the current and current+1 in the loop
+  for(unsigned int i = 0; i < line.size() - 1; i++) 
     {
     if(mask->GetPixel(line[i]) == 0 && mask->GetPixel(line[i+1]) != 0) // Found entry point
       {
-      interiorLine.first = line[i]; // We want to save the outside/valid/non-hole point. This is the first point (i) in the 'exit' case.
+      // We want to save the outside/valid/non-hole point. This is the first point (i) in the 'exit' case.
+      interiorLine.first = line[i]; 
       startPoints++;
       }
 
     if(mask->GetPixel(line[i]) != 0 && mask->GetPixel(line[i+1]) == 0) // Found exit point
       {
-      interiorLine.second = line[i+1]; // We want to save the outside/valid/non-hole point. This is the second point (i+1) in the 'exit' case.
+      // We want to save the outside/valid/non-hole point. This is the second point (i+1) in the 'exit' case.
+      interiorLine.second = line[i+1]; 
       endPoints++;
       }
     }
