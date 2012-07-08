@@ -67,7 +67,8 @@ void Mask::Read(const std::string& filename)
 
   linestream.clear();
   linestream << line;
-  // Can't do this directly because HoleValue and ValidValue are unsigned char, which will only read one character.
+  // Can't do this directly because HoleValue and ValidValue are unsigned char,
+  // which will only read one character.
 //   linestream >> this->HoleValue;
 //   linestream >> this->ValidValue;
   linestream >> holeValue;
