@@ -4,7 +4,6 @@
 // Custom
 #include "Mask.h"
 #include "ITKHelpers/ITKHelpers.h"
-#include "ITKHelpers/ITKStatistics.h"
 
 // ITK
 #include "itkBresenhamLine.h"
@@ -13,6 +12,7 @@
 #include "itkImageRegionIterator.h"
 #include "itkLaplacianOperator.h"
 #include "itkMedianImageFilter.h"
+#include "itkSignedDanielssonDistanceMapImageFilter.h"
 
 namespace MaskOperations
 {
@@ -65,7 +65,8 @@ void CopySourcePatchIntoHoleOfTargetRegion(const TImage* const sourceImage, TIma
 }
 
 template<typename TImage>
-void CreatePatchImage(const TImage* const image, const itk::ImageRegion<2>& sourceRegion, const itk::ImageRegion<2>& targetRegion,
+void CreatePatchImage(const TImage* const image, const itk::ImageRegion<2>& sourceRegion,
+                      const itk::ImageRegion<2>& targetRegion,
                       const Mask* const mask, TImage* const result)
 {
   // The input 'result' is expected to already be sized and initialized.
@@ -97,7 +98,8 @@ template<typename TImage>
 itk::Index<2> FindHighestValueInMaskedRegion(const TImage* const image, float& maxValue, const Mask* const maskImage)
 {
   //EnterFunction("FindHighestValueOnBoundary()");
-  // Return the location of the highest pixel in 'image' out of the non-zero pixels in 'boundaryImage'. Return the value of that pixel by reference.
+  // Return the location of the highest pixel in 'image' out of the non-zero pixels
+  // in 'boundaryImage'. Return the value of that pixel by reference.
 
   // Explicity find the maximum on the boundary
   maxValue = 0.0f; // priorities are non-negative, so anything better than 0 will win
@@ -176,9 +178,75 @@ void AddNoiseInHole(TImage* const image, const Mask* const mask, const float noi
 }
 
 template<typename TImage>
-void InteroplateThroughHole(TImage* const image, Mask* const mask, const itk::Index<2>& p0, const itk::Index<2>& p1, const unsigned int lineThickness)
+void InterpolateHole(TImage* const image, const Mask* const mask)
 {
-  // This function sets the pixels on the line in the mask to valid and sets the corresponding pixels in the image to the interpolated values.
+  struct WeightedPixel
+  {
+    float Weight;
+    itk::Index<2> Pixel;
+    
+    WeightedPixel(const itk::Index<2>& pixel, const float weight)
+    {
+      Weight = weight;
+      Pixel = pixel;
+    }
+    
+    bool operator<(const WeightedPixel &other) const
+    {
+      if(Weight < other.Weight)
+      {
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    }
+  };
+
+  itk::ImageRegion<2> boundingBox = MaskOperations::ComputeHoleBoundingBox(mask);
+
+  typedef itk::SignedDanielssonDistanceMapImageFilter<TImage, ITKHelpersTypes::FloatScalarImageType>
+          SignedDanielssonDistanceMapImageFilterType;
+  typename SignedDanielssonDistanceMapImageFilterType::Pointer distanceMapFilter =
+           SignedDanielssonDistanceMapImageFilterType::New();
+  distanceMapFilter->SetInput(image);
+  distanceMapFilter->SetInsideIsPositive(true);
+  distanceMapFilter->GetOutput()->SetRequestedRegion(boundingBox);
+  distanceMapFilter->Update();
+
+  // the first element will be the one with the smallest value
+  std::priority_queue <WeightedPixel, std::vector<WeightedPixel> > queue;
+  
+  itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(mask, mask->GetLargestPossibleRegion());
+
+  while(!maskIterator.IsAtEnd())
+    {
+    if(mask->IsHole(maskIterator.GetIndex()))
+      {
+      WeightedPixel weightedPixel(maskIterator.GetIndex(),
+                                  distanceMapFilter->GetOutput()->GetPixel(maskIterator.GetIndex()));
+      queue.push(weightedPixel);
+      }
+
+    ++maskIterator;
+    }
+
+  // TODO: Do "Inverse Distance Weighting Interpolation" here
+  
+  while (!queue.empty())
+  {
+    WeightedPixel p = queue.top();   //print out the highest priority element
+    queue.pop();                   //remove the highest priority element
+  }
+}
+
+template<typename TImage>
+void InterpolateThroughHole(TImage* const image, Mask* const mask, const itk::Index<2>& p0,
+                            const itk::Index<2>& p1, const unsigned int lineThickness)
+{
+  // This function sets the pixels on the line in the mask to valid and sets the corresponding pixels
+  // in the image to the interpolated values.
   if(mask->IsHole(p0) || mask->IsHole(p1))
   {
     throw std::runtime_error("Both p0 and p1 must be valid (not holes)!");
@@ -215,7 +283,8 @@ void InteroplateThroughHole(TImage* const image, Mask* const mask, const itk::In
   std::cout << "First pixel in hole ID " << firstHolePixelIndex << std::endl;
     
   typename TImage::PixelType value1;
-  // Look for the last hole pixel, and set value1 to the one after it (the pixel on the valid side of the hole boundary)
+  // Look for the last hole pixel, and set value1 to the one after it
+  // (the pixel on the valid side of the hole boundary)
   unsigned int lastHolePixelIndex = 0;
   for(; pixelId < pixels.size(); ++pixelId)
     {
@@ -271,28 +340,8 @@ void InteroplateThroughHole(TImage* const image, Mask* const mask, const itk::In
 }
 
 template<typename TImage>
-void InteroplateLineBetweenPoints(TImage* const image, const itk::Index<2>& p0, const itk::Index<2>& p1)
-{
-  itk::BresenhamLine<2> line;
-
-  std::vector< itk::Index<2> > pixels = line.BuildLine(p0, p1);
-
-  typename TImage::PixelType value0 = image->GetPixel(p0);
-  typename TImage::PixelType value1 = image->GetPixel(p1);
-
-  float difference = value1 - value0;
-  float step = difference / static_cast<float>(pixels.size());
-
-  for(unsigned int i = 0; i < pixels.size(); i++)
-    {
-    //std::cout << "pixel " << i << " " << pixels[i] << std::endl;
-    image->SetPixel(pixels[i], value0 + i * step);
-    }
-}
-
-
-template<typename TImage>
-void InteroplateLineBetweenPointsWithFilling(TImage* const image, Mask* const mask, const itk::Index<2>& p0, const itk::Index<2>& p1)
+void InteroplateLineBetweenPointsWithFilling(TImage* const image, Mask* const mask,
+                                             const itk::Index<2>& p0, const itk::Index<2>& p1)
 {
   itk::BresenhamLine<2> line;
 
@@ -357,7 +406,8 @@ void MedianFilterInHole(TImage* const image, const Mask* const mask, const unsig
     {
     if(mask->IsHole(imageIterator.GetIndex()))
       {
-      std::cout << "Changing " << image->GetPixel(imageIterator.GetIndex()) << " to " << medianFilter->GetOutput()->GetPixel(imageIterator.GetIndex()) << std::endl;
+      std::cout << "Changing " << image->GetPixel(imageIterator.GetIndex()) << " to "
+                << medianFilter->GetOutput()->GetPixel(imageIterator.GetIndex()) << std::endl;
       imageIterator.Set(medianFilter->GetOutput()->GetPixel(imageIterator.GetIndex()));
       }
 
@@ -509,10 +559,7 @@ typename TImage::PixelType AverageValidNeighborValue(const TImage* const image, 
       }
     }
 
-  //using Statistics::Average;
-  using ITKStatistics::Average;
-
-  return Average(pixels);
+  return Statistics::Average(pixels);
 }
 
 template<typename TImage>
@@ -532,10 +579,7 @@ typename TImage::PixelType AverageHoleNeighborValue(const TImage* const image, c
       }
     }
 
-  //using Statistics::Average;
-  using ITKStatistics::Average;
-
-  return Average(pixels);
+  return Statistics::Average(pixels);
 }
 
 /** Compute the average of all unmasked pixels in a region.*/
@@ -555,27 +599,30 @@ typename TypeTraits<typename TImage::PixelType>::LargerType VarianceInRegionMask
     ++maskIterator;
     }
 
-  return ITKStatistics::Variance(pixels);
+  return Statistics::Variance(pixels);
 }
 
-
-
 template<typename TImage>
-void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::ImageRegion<2>& region, const std::string& filename, const typename TImage::PixelType& holeColor)
+void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::ImageRegion<2>& region,
+                       const std::string& filename, const typename TImage::PixelType& holeColor)
 {
   typedef itk::RegionOfInterestImageFilter<TImage, TImage> RegionOfInterestImageFilterType;
-  typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
+  typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter =
+            RegionOfInterestImageFilterType::New();
   regionOfInterestImageFilter->SetRegionOfInterest(region);
   regionOfInterestImageFilter->SetInput(image);
   regionOfInterestImageFilter->Update();
 
   typedef itk::RegionOfInterestImageFilter<Mask, Mask> RegionOfInterestMaskFilterType;
-  typename RegionOfInterestMaskFilterType::Pointer regionOfInterestMaskFilter = RegionOfInterestMaskFilterType::New();
+  typename RegionOfInterestMaskFilterType::Pointer regionOfInterestMaskFilter =
+            RegionOfInterestMaskFilterType::New();
   regionOfInterestMaskFilter->SetRegionOfInterest(region);
   regionOfInterestMaskFilter->SetInput(mask);
   regionOfInterestMaskFilter->Update();
 
-  itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(), regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(),
+                                                 regionOfInterestImageFilter->GetOutput()->
+                                                 GetLargestPossibleRegion());
 
   while(!imageIterator.IsAtEnd())
     {
@@ -598,22 +645,27 @@ void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::I
 }
 
 template<typename TImage>
-void WriteMaskedRegionPNG(const TImage* const image, const Mask* mask, const itk::ImageRegion<2>& region, const std::string& filename,
-                       const typename TImage::PixelType& holeColor)
+void WriteMaskedRegionPNG(const TImage* const image, const Mask* mask,
+                          const itk::ImageRegion<2>& region, const std::string& filename,
+                          const typename TImage::PixelType& holeColor)
 {
   typedef itk::RegionOfInterestImageFilter<TImage, TImage> RegionOfInterestImageFilterType;
-  typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter = RegionOfInterestImageFilterType::New();
+  typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter =
+            RegionOfInterestImageFilterType::New();
   regionOfInterestImageFilter->SetRegionOfInterest(region);
   regionOfInterestImageFilter->SetInput(image);
   regionOfInterestImageFilter->Update();
 
   typedef itk::RegionOfInterestImageFilter<Mask, Mask> RegionOfInterestMaskFilterType;
-  typename RegionOfInterestMaskFilterType::Pointer regionOfInterestMaskFilter = RegionOfInterestMaskFilterType::New();
+  typename RegionOfInterestMaskFilterType::Pointer regionOfInterestMaskFilter =
+            RegionOfInterestMaskFilterType::New();
   regionOfInterestMaskFilter->SetRegionOfInterest(region);
   regionOfInterestMaskFilter->SetInput(mask);
   regionOfInterestMaskFilter->Update();
 
-  itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(), regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<TImage> imageIterator(regionOfInterestImageFilter->GetOutput(),
+                                                 regionOfInterestImageFilter->GetOutput()->
+                                                 GetLargestPossibleRegion());
 
   while(!imageIterator.IsAtEnd())
     {
@@ -632,7 +684,8 @@ void WriteMaskedRegionPNG(const TImage* const image, const Mask* mask, const itk
   ITKHelpers::RGBImageType::Pointer rgbImage = ITKHelpers::RGBImageType::New();
   //ITKHelpers::VectorImageToRGBImage(regionOfInterestImageFilter->GetOutput(), rgbImage.GetPointer());
 
-  typename itk::ImageFileWriter<ITKHelpers::RGBImageType>::Pointer writer = itk::ImageFileWriter<ITKHelpers::RGBImageType>::New();
+  typename itk::ImageFileWriter<ITKHelpers::RGBImageType>::Pointer writer =
+             itk::ImageFileWriter<ITKHelpers::RGBImageType>::New();
   writer->SetFileName(filename);
   writer->SetInput(rgbImage.GetPointer());
   writer->Update();
@@ -648,7 +701,8 @@ struct Contribution
 };
 
 template <typename TImage>
-void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const float blurVariance, TImage* const output)
+void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const float blurVariance,
+                TImage* const output)
 {
   // Create a Gaussian kernel
   typedef itk::GaussianOperator<float, 1> GaussianOperatorType;
@@ -658,7 +712,8 @@ void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const fl
   radius.Fill(20); // Make a length 41 kernel
 
   GaussianOperatorType gaussianOperator;
-  gaussianOperator.SetDirection(0); // It doesn't matter which direction we set - we will be interpreting the kernel as 1D (no direction)
+  // It doesn't matter which direction we set - we will be interpreting the kernel as 1D (no direction)
+  gaussianOperator.SetDirection(0); 
   gaussianOperator.SetVariance(blurVariance);
   gaussianOperator.CreateToRadius(radius);
 
@@ -777,6 +832,22 @@ void CopyInHoleRegion(const TImage* const input, TImage* const output, const Mas
     if(mask->IsHole(imageIterator.GetIndex()))
     {
       output->SetPixel(imageIterator.GetIndex(), imageIterator.Get());
+    }
+    ++imageIterator;
+  }
+}
+
+template<typename TImage>
+void SetHolePixelsToConstant(TImage* const image, const typename TImage::PixelType& value,
+                             const Mask* const mask)
+{
+  itk::ImageRegionIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
+  
+  while(!imageIterator.IsAtEnd())
+  {
+    if(mask->IsHole(imageIterator.GetIndex()))
+    {
+      imageIterator.Set(value);
     }
     ++imageIterator;
   }

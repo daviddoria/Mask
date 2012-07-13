@@ -41,8 +41,8 @@ void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::I
 
 /** Write a 'region' of an 'image' to 'filename', coloring any invalid pixels in 'mask' the color 'holeColor'. */
 template<typename TImage>
-void WriteMaskedRegionPNG(const TImage* const image, const Mask* mask, const itk::ImageRegion<2>& region, const std::string& filename,
-                       const typename TImage::PixelType& holeColor);
+void WriteMaskedRegionPNG(const TImage* const image, const Mask* mask, const itk::ImageRegion<2>& region,
+                          const std::string& filename, const typename TImage::PixelType& holeColor);
 
 void ITKImageToVTKImageMasked(const ITKHelpers::FloatVectorImageType* const image, const Mask* const mask,
                               vtkImageData* const outputImage, const unsigned char maskColor[3]);
@@ -58,7 +58,8 @@ itk::ImageRegion<2> RandomValidRegion(const Mask* const mask, const unsigned int
 /** Compute the bounding box of the mask. */
 itk::ImageRegion<2> ComputeHoleBoundingBox(const Mask* const mask);
 
-/** Look from a pixel across the hole in a specified direction and return the pixel that exists on the other side of the hole. */
+/** Look from a pixel across the hole in a specified direction and return the
+  * pixel that exists on the other side of the hole. */
 itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel,
                                   const ITKHelpers::FloatVector2Type& direction, const Mask* const mask);
 
@@ -108,12 +109,18 @@ void CreatePatchImage(const TImage* const image, const itk::ImageRegion<2>& sour
 template<typename TImage>
 void AddConstantInHole(TImage* const image, const float value, const Mask* const maskImage);
 
+template<typename TImage>
+void SetHolePixelsToConstant(TImage* const image, const typename TImage::PixelType& value,
+                             const Mask* const maskImage);
+
 /** Return the highest value of the specified image out of the pixels under a specified BoundaryImage. */
 template<typename TImage>
-itk::Index<2> FindHighestValueInMaskedRegion(const TImage* const image, float& maxValue, const Mask* const maskImage);
+itk::Index<2> FindHighestValueInMaskedRegion(const TImage* const image, float& maxValue,
+                                             const Mask* const maskImage);
 
 template<typename TImage, typename TRegionIndicatorImage>
-itk::Index<2> FindHighestValueInNonZero(const TImage* const image, float& maxValue, const TRegionIndicatorImage* const maskImage);
+itk::Index<2> FindHighestValueInNonZero(const TImage* const image, float& maxValue,
+                                        const TRegionIndicatorImage* const maskImage);
 
 /** Get the average value of the masked pixels. */
 template<typename TImage>
@@ -138,19 +145,24 @@ std::vector<typename TImage::PixelType> GetValidPixelsInRegion(const TImage* con
 template<typename TImage>
 void AddNoiseInHole(TImage* const image, const Mask* const mask, const float noiseVariance);
 
-/** Interpolate values through a hole, filling only pixels that are in the hole. This function assumes one hole entry and one hole exit (i.e. the line between p0 and p1 only intersects the hole twice). */
+/** Interpolate values through a hole, filling only pixels that are in the hole.
+  * This function assumes one hole entry and one hole exit (i.e. the line between
+  * p0 and p1 only intersects the hole twice). */
 template<typename TImage>
-void InteroplateThroughHole(TImage* const image, Mask* const mask, const itk::Index<2>& p0,
+void InterpolateThroughHole(TImage* const image, const Mask* const mask, const itk::Index<2>& p0,
                             const itk::Index<2>& p1, const unsigned int lineThickness = 0);
 
+/** Interpolate values in a hole. */
 template<typename TImage>
-void InteroplateLineBetweenPoints(TImage* const image, const itk::Index<2>& p0, const itk::Index<2>& p1);
+void InterpolateHole(TImage* const image, const Mask* const mask);
 
-/** Blur an image using all of its values but only replaced the pixel values with the blurred values inside the hole. */
+/** Blur an image using all of its values but only replaced the pixel values with
+  * the blurred values inside the hole. */
 template<typename TImage>
 void BlurInHole(TImage* const image, const Mask* const mask, const float kernelVariance = 1.0f);
 
-/** Median filter an image using all of its values but only replaced the pixel values with the blurred values inside the hole. */
+/** Median filter an image using all of its values but only replaced the pixel values
+ * with the blurred values inside the hole. */
 template<typename TImage>
 void MedianFilterInHole(TImage* const image, const Mask* const mask, const unsigned int kernelRadius = 1);
 
@@ -158,6 +170,12 @@ void MedianFilterInHole(TImage* const image, const Mask* const mask, const unsig
 template<typename TImage>
 void ClipInHole(TImage* const image, const Mask* const mask, const float min, const float max);
 
+
+/** Intersect a line with a hole. Return a pair containing the starting and ending
+  * points of the line intersection. */
+std::pair<itk::Index<2>, itk::Index<2> > IntersectLineWithHole(const std::vector<itk::Index<2> >& line,
+                                                               const Mask* const mask,
+                                                               bool &hasInteriorLine);
 
 } // end namespace
 

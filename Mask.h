@@ -21,10 +21,10 @@
 \brief This class is a subclass of itkImage that provides the concept of "valid" pixels
        and hole pixels. Pixels that are any other value are never used in computations.
        Using itkImageFileReader, the first channel of any input image will be attempted
-       to be converted to a Mask. NOTE: If the image is a 4 channel image where the 4th
-       channel represents alpha, the reader sometimes produces a blank image. Ideally
-       a 3 channel grayscale (all channels are the same) or 1 channel image is used
-       as input.
+       to be converted to a Mask. If the image is a 4 channel image where the 4th
+       channel represents alpha (or a 2 channel image where the 2nd channel represents alpha)
+       the reader sometimes produces a blank image. We throw an exception if this is the case.
+       Your mask should be a 1 or 3 channel image.
 */
 
 #ifndef MASK_H
@@ -83,10 +83,10 @@ public:
 
   /** Determine if a value matches the mask's valid value.*/
   bool IsValidValue(const unsigned char value) const;
-  
+
   /** Determine if an entire region consists of hole pixels.*/
   bool IsHole(const itk::ImageRegion<2>& region) const;
-  
+
   /** Determine if an entire region is valid.*/
   bool IsValid(const itk::ImageRegion<2>& region) const;
 
@@ -108,7 +108,7 @@ public:
 
   /** Only keep the largest separate hole.*/
   void KeepLargestHole();
-  
+
   /** Increase the size of the hole.*/
   void ExpandHole(const unsigned int kernelRadius);
 
@@ -120,6 +120,15 @@ public:
 
   /** Specify which value should be considered valid.*/
   void SetValidValue(const unsigned char value);
+
+  /** Mark the pixel as a hole.*/
+  void SetHole(const itk::Index<2>& index);
+
+  /** Mark the pixel as valid.*/
+  void SetValid(const itk::Index<2>& index);
+
+  /** Mark the region as valid.*/
+  void SetValid(const itk::ImageRegion<2>& region);
 
   /** Get the value that is considered a hole.*/
   unsigned char GetHoleValue() const;
@@ -144,11 +153,11 @@ public:
   void CopyHolesFromValue(const TImage* const inputImage, const unsigned int value);
 
   enum PixelTypeEnum {HOLE, VALID};
-  
+
   /** Create valid pixels from specified pixels in an image.*/
   template <typename TImage>
   void CopyValidPixelsFromValue(const TImage* const inputImage, const unsigned int value);
-  
+
   /** Find the boundary of the Mask.*/
   typedef itk::Image<unsigned char, 2> BoundaryImageType;
   void FindBoundary(BoundaryImageType* const boundary, const PixelTypeEnum& whichSideOfBoundary,
@@ -164,12 +173,13 @@ public:
   /** Change the hole pixels in 'image' to a specified 'holeValue'. 'holeValue' is not const because it might
    need to be modified if it is not provided or is invalid. */
   template<typename TImage>
-  void ApplyToImage(TImage* const image,
-                    typename TImage::PixelType holeValue = typename TImage::PixelType()) const;
+  void ApplyToScalarImage(TImage* const image,
+                          typename TImage::PixelType holeValue = itk::NumericTraits<typename TImage::PixelType>::ZeroValue()) const;
+                          //typename TImage::PixelType holeValue = typename TImage::PixelType()) const;
 
   /** Recolor the hole pixels in 'image' a specified 'color'.*/
   template<typename TImage, typename TColor>
-  void ApplyToVectorImage(TImage* const image, const TColor& color)const ;
+  void ApplyToVectorImage(TImage* const image, const TColor& color) const;
 
   /** Create a mask from a mask image.*/
   template<typename TImage>
@@ -190,7 +200,7 @@ public:
                                                        const itk::ImageRegion<2>& region);
 
   std::vector<itk::Index<2> > GetValid4Neighbors(const itk::Index<2>& pixel);
-  
+
   /** Get a list of the hole neighbors of a pixel.*/
   std::vector<itk::Index<2> > GetHoleNeighbors(const itk::Index<2>& pixel) const;
 
@@ -199,10 +209,10 @@ public:
 
   /** Get a list of the offsets of the hole neighbors of a pixel.*/
   std::vector<itk::Offset<2> > GetHoleNeighborOffsets(const itk::Index<2>& pixel) const;
-  
+
   /** Get a list of the valid pixels in a region.*/
   std::vector<itk::Index<2> > GetValidPixelsInRegion(itk::ImageRegion<2> region) const;
-  
+
   /** Get a list of the hole pixels in a region.*/
   std::vector<itk::Index<2> > GetHolePixelsInRegion(itk::ImageRegion<2> region) const;
   std::vector<itk::Index<2> > GetHolePixels() const;
@@ -212,7 +222,7 @@ public:
 
   /** Get a list of the offsets of the hole pixels in a region.*/
   std::vector<itk::Offset<2> > GetHoleOffsetsInRegion(itk::ImageRegion<2> region) const;
-  
+
   /** Count hole pixels in a region.*/
   unsigned int CountHolePixels(const itk::ImageRegion<2>& region) const;
 
@@ -221,7 +231,7 @@ public:
 
   /** Count hole pixels that are touching valid pixels.*/
   unsigned int CountBoundaryPixels() const;
-  
+
   /** Count hole pixels in the whole mask.*/
   unsigned int CountHolePixels() const;
 
@@ -235,13 +245,13 @@ public:
   unsigned int CountValidPatches(const unsigned int patchRadius) const;
 
   itk::ImageRegion<2> FindFirstValidPatch(const unsigned int patchRadius);
-  
+
   /** Count valid pixels in the whole mask.*/
   unsigned int CountValidPixels() const;
 
   /** Read the mask from a file.*/
   void Read(const std::string& filename);
-  
+
   /** Read the mask from an image file.*/
   void ReadFromImage(const std::string& filename);
 

@@ -67,7 +67,8 @@ void Mask::Read(const std::string& filename)
 
   linestream.clear();
   linestream << line;
-  // Can't do this directly because HoleValue and ValidValue are unsigned char, which will only read one character.
+  // Can't do this directly because HoleValue and ValidValue are unsigned char,
+  // which will only read one character.
 //   linestream >> this->HoleValue;
 //   linestream >> this->ValidValue;
   linestream >> holeValue;
@@ -785,4 +786,25 @@ itk::ImageRegion<2> Mask::FindFirstValidPatch(const unsigned int patchRadius)
   // We should never reach this point
   itk::ImageRegion<2> dummyRegion;
   return dummyRegion;
+}
+
+void Mask::SetHole(const itk::Index<2>& index)
+{
+  this->SetPixel(index, this->HoleValue);
+}
+
+void Mask::SetValid(const itk::Index<2>& index)
+{
+  this->SetPixel(index, this->ValidValue);
+}
+
+void Mask::SetValid(const itk::ImageRegion<2>& region)
+{
+  itk::ImageRegionIteratorWithIndex<Mask> maskIterator(this, region);
+
+  while(!maskIterator.IsAtEnd())
+    {
+    maskIterator.Set(this->ValidValue);
+    ++maskIterator;
+    }
 }
