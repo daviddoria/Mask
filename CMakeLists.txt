@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 2.8)
 
+set(Mask_includes ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
+
 FIND_PACKAGE(Qt4 REQUIRED)
 INCLUDE(${QT_USE_FILE})
 
 if(NOT TARGET ITKHelpers)
   add_subdirectory(ITKHelpers)
 endif()
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 # This is needed for c++0x features used in Helpers.
 if(UNIX)
@@ -17,7 +17,8 @@ endif(UNIX)
 FIND_PACKAGE(VTK REQUIRED)
 INCLUDE(${VTK_USE_FILE})
 
-FIND_PACKAGE(ITK REQUIRED)
+FIND_PACKAGE(ITK REQUIRED ITKCommon ITKIOImageBase
+ITKImageIntensity ITKImageFeature ITKMathematicalMorphology ITKBinaryMathematicalMorphology ITKDistanceMap)
 INCLUDE(${ITK_USE_FILE})
 
 SET(Mask_BuildTests OFF CACHE BOOL "Build Mask tests?")
