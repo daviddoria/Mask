@@ -1,14 +1,15 @@
 cmake_minimum_required(VERSION 2.8)
 
-if(NOT ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
-  set(Mask_includes ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
-endif()
-
 FIND_PACKAGE(Qt4 REQUIRED)
 INCLUDE(${QT_USE_FILE})
 
 if(NOT TARGET ITKHelpers)
   add_subdirectory(ITKHelpers)
+  include_directories(${ITKHelpers_includes})
+endif()
+
+if(NOT ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+  set(Mask_includes ${ITKHelpers_includes} ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
 endif()
 
 # This is needed for c++0x features used in Helpers.
