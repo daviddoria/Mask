@@ -168,7 +168,7 @@ public:
 
   /** Recolor the hole pixels in 'image' a specified 'color'. 'color' cannot have a default value (even itk::NumericTraits<T>::ZeroValue())
     * because for a itk::VectorImage<ScalarType, 2>, the ::PixelType is a itk::VariableLengthVector<ScalarType>, which does not have a size,
-    * so therefore the ZeroValue() function will not do what we'd expect. /
+    * so therefore the ZeroValue() function will not do what we'd expect. */
   template<typename TImage>
   void ApplyToImage(TImage* const image, const typename TImage::PixelType& color) const;
 
@@ -182,7 +182,6 @@ public:
   template<typename TImage>
   void ApplyToScalarImage(TImage* const image,
                           typename TImage::PixelType holeValue = itk::NumericTraits<typename TImage::PixelType>::ZeroValue()) const;
-                          //typename TImage::PixelType holeValue = typename TImage::PixelType()) const;
 
   /** Recolor the hole pixels in 'image' a specified 'color'.
    * Here 'TColor' must have .red(), .green(), and .blue() functions.*/
