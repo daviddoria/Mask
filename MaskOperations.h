@@ -1,6 +1,6 @@
 /*=========================================================================
  *
- *  Copyright David Doria 2011 daviddoria@gmail.com
+ *  Copyright David Doria 2012 daviddoria@gmail.com
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -179,6 +179,6 @@ std::pair<itk::Index<2>, itk::Index<2> > IntersectLineWithHole(const std::vector
 
 } // end namespace
 
-#include "MaskOperations.hxx"
+#include "MaskOperations.hpp"
 
 #endif
