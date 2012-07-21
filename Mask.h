@@ -1,6 +1,6 @@
 /*=========================================================================
  *
- *  Copyright David Doria 2011 daviddoria@gmail.com
+ *  Copyright David Doria 2012 daviddoria@gmail.com
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -166,22 +166,29 @@ public:
                             const PixelTypeEnum& whichSideOfBoundary,
                             const BoundaryImageType::PixelType& outputBoundaryPixelValue = 255) const;
 
-  /** Recolor the hole pixels in 'image' a specified 'color'.*/
-  template<typename TImage, typename TColor>
-  void ApplyColorToImage(TImage* const image, const TColor& color) const;
+  /** Recolor the hole pixels in 'image' a specified 'color'. 'color' cannot have a default value (even itk::NumericTraits<T>::ZeroValue())
+    * because for a itk::VectorImage<ScalarType, 2>, the ::PixelType is a itk::VariableLengthVector<ScalarType>, which does not have a size,
+    * so therefore the ZeroValue() function will not do what we'd expect. */
+  template<typename TImage>
+  void ApplyToImage(TImage* const image, const typename TImage::PixelType& color) const;
+
+  /** Recolor the hole pixels in 'maskRegion' in 'imageRegion' in 'image' a specified 'color'.*/
+  template<typename TImage>
+  void ApplyRegionToImageRegion(const itk::ImageRegion<2>& maskRegion, TImage* const image,
+                                const itk::ImageRegion<2>& imageRegion, const typename TImage::PixelType& color) const;
 
   /** Change the hole pixels in 'image' to a specified 'holeValue'. 'holeValue' is not const because it might
-   need to be modified if it is not provided or is invalid. */
+    * need to be modified if it is not provided or is invalid. */
   template<typename TImage>
   void ApplyToScalarImage(TImage* const image,
                           typename TImage::PixelType holeValue = itk::NumericTraits<typename TImage::PixelType>::ZeroValue()) const;
-                          //typename TImage::PixelType holeValue = typename TImage::PixelType()) const;
 
-  /** Recolor the hole pixels in 'image' a specified 'color'.*/
+  /** Recolor the hole pixels in 'image' a specified 'color'.
+   * Here 'TColor' must have .red(), .green(), and .blue() functions.*/
   template<typename TImage, typename TColor>
-  void ApplyToVectorImage(TImage* const image, const TColor& color) const;
+  void ApplyToRGBImage(TImage* const image, const TColor& color) const;
 
-  /** Create a mask from a mask image.*/
+  /** Create a mask from a mask image. That is, take a binary image (or grayscale) and convert it to a Mask.*/
   template<typename TImage>
   void CreateFromImage(const TImage* const image, const typename TImage::PixelType& holeColor);
 
@@ -273,6 +280,6 @@ private:
 
 };
 
-#include "Mask.hxx"
+#include "Mask.hpp"
 
 #endif
