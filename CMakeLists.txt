@@ -29,6 +29,12 @@ if(Mask_BuildTests)
   add_subdirectory(Tests)
 endif(Mask_BuildTests)
 
-#add_library(Mask Mask.cpp MaskOperations.cpp MaskQt.cpp)
 add_library(Mask Mask.cpp MaskOperations.cpp)
 target_link_libraries(Mask ITKHelpers)
+
+# Only build the MaskQt file if Qt is available
+FIND_PACKAGE(Qt4)
+if(DEFINED QT4_FOUND)
+  INCLUDE(${QT_USE_FILE})
+  add_library(MaskQt Mask.cpp MaskQt.cpp)
+endif()
