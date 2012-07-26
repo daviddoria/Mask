@@ -1,6 +1,6 @@
 /*=========================================================================
  *
- *  Copyright David Doria 2011 daviddoria@gmail.com
+ *  Copyright David Doria 2012 daviddoria@gmail.com
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ namespace MaskOperations
 itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel,
                                   const ITKHelpers::FloatVector2Type& inputDirection, const Mask* const mask)
 {
+  assert(mask);
   if(!mask->IsValid(queryPixel))
     {
     throw std::runtime_error("Can only follow valid pixel+vector across a hole.");
@@ -70,6 +71,7 @@ itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel,
 void ITKImageToVTKImageMasked(const ITKHelpers::FloatVectorImageType* const image, const Mask* const mask,
                               vtkImageData* const outputImage, const unsigned char maskColor[3])
 {
+  assert(mask);
   // This function assumes an ND (with N>3) image has the first 3 channels as RGB and extra
   // information in the remaining channels.
 
@@ -122,6 +124,7 @@ void ITKImageToVTKImageMasked(const ITKHelpers::FloatVectorImageType* const imag
 
 itk::ImageRegion<2> RandomRegionInsideHole(const Mask* const mask, const unsigned int halfWidth)
 {
+  assert(mask);
   std::vector<itk::Index<2> > holePixels = mask->GetHolePixelsInRegion(mask->GetLargestPossibleRegion());
 
   itk::ImageRegion<2> randomRegion;
@@ -153,6 +156,8 @@ itk::ImageRegion<2> RandomValidRegion(const Mask* const mask, const unsigned int
 
 itk::ImageRegion<2> ComputeHoleBoundingBox(const Mask* const mask)
 {
+  assert(mask);
+
   itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(mask, mask->GetLargestPossibleRegion());
 
   // Initialize backwards
@@ -193,6 +198,8 @@ itk::ImageRegion<2> ComputeHoleBoundingBox(const Mask* const mask)
 
 void SetMaskTransparency(const Mask* const input, vtkImageData* outputImage)
 {
+  assert(input);
+
   // Setup and allocate the VTK image
   outputImage->SetDimensions(input->GetLargestPossibleRegion().GetSize()[0],
                              input->GetLargestPossibleRegion().GetSize()[1],
@@ -239,6 +246,8 @@ std::vector<itk::ImageRegion<2> > GetAllFullyValidRegions(const Mask* const mask
                                                           const itk::ImageRegion<2>& searchRegion,
                                                           const unsigned int patchRadius)
 {
+  assert(mask);
+
   std::vector<itk::ImageRegion<2> > fullyValidRegions;
 
   itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(mask, searchRegion);
@@ -261,6 +270,7 @@ std::vector<itk::ImageRegion<2> > GetAllFullyValidRegions(const Mask* const mask
 
 std::vector<itk::ImageRegion<2> > GetAllFullyValidRegions(const Mask* const mask, const unsigned int patchRadius)
 {
+  assert(mask);
   return GetAllFullyValidRegions(mask, mask->GetLargestPossibleRegion(), patchRadius);
 }
 
@@ -269,6 +279,8 @@ itk::ImageRegion<2> GetRandomValidPatchInRegion(const Mask* const mask,
                                                 const unsigned int patchRadius,
                                                 const unsigned int maxNumberOfAttempts)
 {
+  assert(mask);
+
   unsigned int numberOfAttempts = 0;
 
   itk::Size<2> patchSize = {{patchRadius * 2 + 1, patchRadius * 2 + 1}};
@@ -300,11 +312,12 @@ itk::ImageRegion<2> GetRandomValidPatchInRegion(const Mask* const mask,
   return region;
 }
 
-
 itk::ImageRegion<2> GetRandomValidPatchInRegion(const Mask* const mask,
                                                 const itk::ImageRegion<2>& searchRegion,
                                                 const unsigned int patchRadius)
 {
+  assert(mask);
+
   unsigned int numberOfAttempts = 0;
 
   itk::Size<2> patchSize = {{patchRadius * 2 + 1, patchRadius * 2 + 1}};
@@ -358,6 +371,7 @@ std::pair<itk::Index<2>, itk::Index<2> > IntersectLineWithHole(const std::vector
                                                                const Mask* const mask,
                                                                bool &hasInteriorLine)
 {
+  assert(mask);
   // We want to find where the line enters the mask, and where it leaves the mask.
   // This function assumes that the line starts outside the mask. Nothing is assumed
   // about where the line ends (if it ends inside the mask, then there is no interior line).

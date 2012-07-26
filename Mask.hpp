@@ -1,6 +1,6 @@
 /*=========================================================================
  *
- *  Copyright David Doria 2011 daviddoria@gmail.com
+ *  Copyright David Doria 2012 daviddoria@gmail.com
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
 #include "itkImageRegionIterator.h"
 
 template<typename TImage, typename TColor>
-void Mask::ApplyToVectorImage(TImage* const image, const TColor& color) const
+void Mask::ApplyToRGBImage(TImage* const image, const TColor& color) const
 {
   // Using generics, we allow any Color class that has .red(), .green(), and .blue() member functions
   // to be used to specify the color.
@@ -58,12 +58,9 @@ void Mask::ApplyToVectorImage(TImage* const image, const TColor& color) const
     }
 }
 
-template<typename TImage, typename TColor>
-void Mask::ApplyColorToImage(TImage* const image, const TColor& color) const
+template<typename TImage>
+void Mask::ApplyToImage(TImage* const image, const typename TImage::PixelType& color) const
 {
-  // Using generics, we allow any Color class that has .red(), .green(), and .blue() member functions
-  // to be used to specify the color.
-
   if(image->GetLargestPossibleRegion() != this->GetLargestPossibleRegion())
     {
     std::cerr << "Image and mask must be the same size!" << std::endl
@@ -71,27 +68,33 @@ void Mask::ApplyColorToImage(TImage* const image, const TColor& color) const
               << "Mask region: " << this->GetLargestPossibleRegion() << std::endl;
     return;
     }
+  ApplyRegionToImageRegion(this->GetLargestPossibleRegion(), image, image->GetLargestPossibleRegion(), color);
+}
 
-  // Color the hole pixels in the image.
-  typename TImage::PixelType holeValue;
-  holeValue.Fill(0);
-  if(image->GetNumberOfComponentsPerPixel() >= 3)
+template<typename TImage>
+void Mask::ApplyRegionToImageRegion(const itk::ImageRegion<2>& maskRegion, TImage* const image,
+                                    const itk::ImageRegion<2>& imageRegion, const typename TImage::PixelType& color) const
+{
+  if(maskRegion.GetSize() != imageRegion.GetSize())
     {
-    holeValue[0] = color.red();
-    holeValue[1] = color.green();
-    holeValue[2] = color.blue();
+    std::cerr << "imageRegion and maskRegion must be the same size!" << std::endl
+              << "Image region: " << imageRegion << std::endl
+              << "Mask region: " << maskRegion << std::endl;
+    return;
     }
 
-  itk::ImageRegionConstIterator<Mask> maskIterator(this, this->GetLargestPossibleRegion());
+  itk::ImageRegionConstIterator<Mask> maskIterator(this, maskRegion);
+  itk::ImageRegionIterator<TImage> imageIterator(image, imageRegion);
 
   while(!maskIterator.IsAtEnd())
     {
     if(this->IsHole(maskIterator.GetIndex()))
       {
-      image->SetPixel(maskIterator.GetIndex(), holeValue);
+      imageIterator.Set(color);
       }
 
     ++maskIterator;
+    ++imageIterator;
     }
 }
 
