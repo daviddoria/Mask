@@ -302,7 +302,7 @@ itk::ImageRegion<2> GetRandomValidPatchInRegion(const Mask* const mask,
     numberOfAttempts++;
     if(numberOfAttempts > maxNumberOfAttempts)
     {
-      throw;
+      throw std::runtime_error("The numberOfAttempts exceeded maxNumberOfAttempts!");
     }
   } while(!(mask->GetLargestPossibleRegion().IsInside(region) && mask->IsValid(region)));
 
