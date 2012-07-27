@@ -302,10 +302,7 @@ itk::ImageRegion<2> GetRandomValidPatchInRegion(const Mask* const mask,
     numberOfAttempts++;
     if(numberOfAttempts > maxNumberOfAttempts)
     {
-      // for now, return the failure situation without trying hard. See if this is the bottleneck.
-      itk::Size<2> regionSize = {{0,0}};
-      region.SetSize(regionSize);
-      return region;
+      throw;
     }
   } while(!(mask->GetLargestPossibleRegion().IsInside(region) && mask->IsValid(region)));
 
