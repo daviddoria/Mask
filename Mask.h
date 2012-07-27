@@ -195,17 +195,20 @@ public:
   /** Get a list of the valid neighbors of a pixel.*/
   std::vector<itk::Index<2> > GetValidNeighbors(const itk::Index<2>& pixel) const;
 
-  /** Determine if a pixel has at least 1 hole neighbor.*/
+  /** Determine if a pixel has at least 1 hole 8-neighbor.*/
   bool HasHoleNeighbor(const itk::Index<2>& pixel) const;
 
-  /** Determine if a pixel has at least 1 valid neighbor.*/
+  /** Determine if a pixel has at least 1 valid 8-neighbor.*/
   bool HasValidNeighbor(const itk::Index<2>& pixel) const;
 
+  /** Determine if a pixel has at least 1 valid 4-neighbor.*/
   bool HasValid4Neighbor(const itk::Index<2>& pixel);
 
+  /** Determine which of the 4-neighbors of a 'pixel' are valid and inside 'region'.*/
   std::vector<itk::Index<2> > GetValid4NeighborIndices(const itk::Index<2>& pixel,
                                                        const itk::ImageRegion<2>& region);
 
+  /** Determine which of the 4-neighbors of a 'pixel' are valid.*/
   std::vector<itk::Index<2> > GetValid4Neighbors(const itk::Index<2>& pixel);
 
   /** Get a list of the hole neighbors of a pixel.*/
@@ -217,11 +220,15 @@ public:
   /** Get a list of the offsets of the hole neighbors of a pixel.*/
   std::vector<itk::Offset<2> > GetHoleNeighborOffsets(const itk::Index<2>& pixel) const;
 
-  /** Get a list of the valid pixels in a region.*/
+  /** Get a list of the valid pixels in a region. 'region' is not passed by reference because
+    * it is cropped by the image before computing the valid pixels. */
   std::vector<itk::Index<2> > GetValidPixelsInRegion(itk::ImageRegion<2> region) const;
 
-  /** Get a list of the hole pixels in a region.*/
+  /** Get a list of the hole pixels in a region. 'region' is not passed by reference because
+    * it is cropped by the image before computing the valid pixels. */
   std::vector<itk::Index<2> > GetHolePixelsInRegion(itk::ImageRegion<2> region) const;
+
+  /** Get a list of the hole pixels in the mask.*/
   std::vector<itk::Index<2> > GetHolePixels() const;
 
   /** Get a list of the offsets of the valid pixels in a region.*/
@@ -242,7 +249,10 @@ public:
   /** Count hole pixels in the whole mask.*/
   unsigned int CountHolePixels() const;
 
+  /** Determine if the mask has any hole pixels.*/
   bool HasHolePixels() const;
+
+  /** Determine if the mask has any hole pixels in 'region'.*/
   bool HasHolePixels(const itk::ImageRegion<2>& region) const;
 
   /** Count valid pixels in a region.*/
@@ -251,6 +261,7 @@ public:
   /** Count valid pixels in a region.*/
   unsigned int CountValidPatches(const unsigned int patchRadius) const;
 
+  /** Find the first valid patch of radius 'patchRadius' in raster scan order.*/
   itk::ImageRegion<2> FindFirstValidPatch(const unsigned int patchRadius);
 
   /** Count valid pixels in the whole mask.*/
@@ -273,10 +284,14 @@ private:
   Mask(const Self &);    //purposely not implemented
   void operator=(const Self &); //purposely not implemented
 
+  /** Constructor. */
   Mask();
 
-  unsigned char HoleValue; // Pixels with this value will be filled.
-  unsigned char ValidValue; // Pixels with this value will not be filled - they are the source region.
+  /** Pixels with this value indicate a hole. */
+  unsigned char HoleValue;
+
+  /** Pixels with this value are valid. */
+  unsigned char ValidValue;
 
 };
 
