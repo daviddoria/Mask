@@ -20,7 +20,9 @@
 #define MaskOperations_H
 
 // Custom
-class Mask;
+#include "Mask.h"
+
+// Submodules
 #include "ITKHelpers/ITKHelpers.h"
 
 // ITK
@@ -100,8 +102,15 @@ void CopySelfPatchIntoHoleOfTargetRegion(TImage* const image, const Mask* const 
                                          const itk::ImageRegion<2>& sourceRegionInput,
                                          const itk::ImageRegion<2>& destinationRegionInput);
 
+template<typename TImage>
+void CopyAtValues(const TImage* const input, const Mask::PixelType& value,
+                  const Mask* const mask, TImage* const output);
+
 template <class TImage>
 void CopyInHoleRegion(const TImage* const input, TImage* const output, const Mask* const mask);
+
+template <class TImage>
+void CopyInValidRegion(const TImage* const input, TImage* const output, const Mask* const mask);
 
 template <class TImage>
 void CopySourcePatchIntoHoleOfTargetRegion(const TImage* const sourceImage, TImage* const targetImage,
