@@ -249,6 +249,12 @@ public:
   /** Count hole pixels in the whole mask.*/
   unsigned int CountHolePixels() const;
 
+  /** Determine if the mask has any valid pixels.*/
+  bool HasValidPixels() const;
+
+  /** Determine if the mask has any valid pixels in 'region'.*/
+  bool HasValidPixels(const itk::ImageRegion<2>& region) const;
+
   /** Determine if the mask has any hole pixels.*/
   bool HasHolePixels() const;
 

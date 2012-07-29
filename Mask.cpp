@@ -153,6 +153,23 @@ unsigned int Mask::CountHolePixels(const itk::ImageRegion<2>& region) const
   return GetHolePixelsInRegion(region).size();
 }
 
+bool Mask::HasValidPixels() const
+{
+  return HasValidPixels(this->GetLargestPossibleRegion());
+}
+
+bool Mask::HasValidPixels(const itk::ImageRegion<2>& region) const
+{
+  if(CountValidPixels(region) > 0)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
 bool Mask::HasHolePixels() const
 {
   return HasHolePixels(this->GetLargestPossibleRegion());
