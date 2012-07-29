@@ -166,8 +166,10 @@ public:
                             const PixelTypeEnum& whichSideOfBoundary,
                             const BoundaryImageType::PixelType& outputBoundaryPixelValue = 255) const;
 
-  /** Recolor the hole pixels in 'image' a specified 'color'. 'color' cannot have a default value (even itk::NumericTraits<T>::ZeroValue())
-    * because for a itk::VectorImage<ScalarType, 2>, the ::PixelType is a itk::VariableLengthVector<ScalarType>, which does not have a size,
+  /** Recolor the hole pixels in 'image' a specified 'color'. 'color' cannot have a
+    * default value (even itk::NumericTraits<T>::ZeroValue())
+    * because for a itk::VectorImage<ScalarType, 2>, the ::PixelType is a
+    * itk::VariableLengthVector<ScalarType>, which does not have a size,
     * so therefore the ZeroValue() function will not do what we'd expect. */
   template<typename TImage>
   void ApplyToImage(TImage* const image, const typename TImage::PixelType& color) const;
@@ -175,13 +177,15 @@ public:
   /** Recolor the hole pixels in 'maskRegion' in 'imageRegion' in 'image' a specified 'color'.*/
   template<typename TImage>
   void ApplyRegionToImageRegion(const itk::ImageRegion<2>& maskRegion, TImage* const image,
-                                const itk::ImageRegion<2>& imageRegion, const typename TImage::PixelType& color) const;
+                                const itk::ImageRegion<2>& imageRegion,
+                                const typename TImage::PixelType& color) const;
 
   /** Change the hole pixels in 'image' to a specified 'holeValue'. 'holeValue' is not const because it might
     * need to be modified if it is not provided or is invalid. */
   template<typename TImage>
   void ApplyToScalarImage(TImage* const image,
-                          typename TImage::PixelType holeValue = itk::NumericTraits<typename TImage::PixelType>::ZeroValue()) const;
+                          typename TImage::PixelType holeValue =
+                            itk::NumericTraits<typename TImage::PixelType>::ZeroValue()) const;
 
   /** Recolor the hole pixels in 'image' a specified 'color'.
    * Here 'TColor' must have .red(), .green(), and .blue() functions.*/
