@@ -33,13 +33,15 @@ class vtkImageData;
 namespace MaskOperations
 {
 
-/** Write a 'region' of an 'image' to 'filename', coloring any invalid pixels in 'mask' the color 'holeColor'. */
+/** Write a 'region' of an 'image' to 'filename', coloring any invalid pixels
+  * in 'mask' the color 'holeColor'. */
 template<typename TImage>
 void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::ImageRegion<2>& region,
                        const std::string& filename,
                        const typename TImage::PixelType& holeColor);
 
-/** Write a 'region' of an 'image' to 'filename', coloring any invalid pixels in 'mask' the color 'holeColor'. */
+/** Write a 'region' of an 'image' to 'filename', coloring any invalid pixels
+ * in 'mask' the color 'holeColor'. */
 template<typename TImage>
 void WriteMaskedRegionPNG(const TImage* const image, const Mask* mask, const itk::ImageRegion<2>& region,
                           const std::string& filename, const typename TImage::PixelType& holeColor);
@@ -55,8 +57,11 @@ itk::ImageRegion<2> RandomRegionInsideHole(const Mask* const mask, const unsigne
 /** Return a random region that is entirely valid. */
 itk::ImageRegion<2> RandomValidRegion(const Mask* const mask, const unsigned int halfWidth);
 
-/** Compute the bounding box of the mask. */
+/** Compute the bounding box of the hole pixels. */
 itk::ImageRegion<2> ComputeHoleBoundingBox(const Mask* const mask);
+
+/** Compute the bounding box of the valid pixels. */
+itk::ImageRegion<2> ComputeValidBoundingBox(const Mask* const mask);
 
 /** Look from a pixel across the hole in a specified direction and return the
   * pixel that exists on the other side of the hole. */
@@ -65,7 +70,8 @@ itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel,
 
 
 /** Get all regions of a particular size that contain only valid pixels.*/
-std::vector<itk::ImageRegion<2> > GetAllFullyValidRegions(const Mask* const mask, const unsigned int patchRadius);
+std::vector<itk::ImageRegion<2> > GetAllFullyValidRegions(const Mask* const mask,
+                                                          const unsigned int patchRadius);
 
 /** Get all regions of a particular size inside searchRegion that contain only valid pixels.*/
 std::vector<itk::ImageRegion<2> > GetAllFullyValidRegions(const Mask* const mask,
@@ -78,7 +84,8 @@ itk::ImageRegion<2> GetRandomValidPatchInRegion(const Mask* const mask,
                                                 const unsigned int patchRadius,
                                                 const unsigned int maxNumberOfAttempts);
 
-/** Get a random fully valid patch in the specified region. Try harder than the above function - takes much longer.*/
+/** Get a random fully valid patch in the specified region. Try harder than the
+  * above function - takes much longer.*/
 itk::ImageRegion<2> GetRandomValidPatchInRegion(const Mask* const mask,
                                                 const itk::ImageRegion<2>& searchRegion,
                                                 const unsigned int patchRadius);
@@ -138,7 +145,8 @@ typename TImage::PixelType AverageHoleNeighborValue(const TImage* const image, c
 
 /** Get the average value of the masked neighbors of a pixel. */
 template<typename TImage>
-std::vector<typename TImage::PixelType> GetValidPixelsInRegion(const TImage* const image, const Mask* const mask,
+std::vector<typename TImage::PixelType> GetValidPixelsInRegion(const TImage* const image,
+                                                               const Mask* const mask,
                                                                const itk::ImageRegion<2>& region);
 
 /** Get the average value of the masked neighbors of a pixel. */
