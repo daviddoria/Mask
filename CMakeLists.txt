@@ -10,6 +10,7 @@ endif()
 
 if(NOT ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
   set(Mask_includes ${ITKHelpers_includes} ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
+  message("Mask submodule used from ${CMAKE_CURRENT_SOURCE_DIR}")
 endif()
 
 # This is needed for c++0x features used in Helpers.
