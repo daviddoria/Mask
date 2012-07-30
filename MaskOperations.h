@@ -129,7 +129,7 @@ template<typename TImage>
 void SetHolePixelsToConstant(TImage* const image, const typename TImage::PixelType& value,
                              const Mask* const maskImage);
 
-/** Return the highest value of the specified image out of the pixels under a specified BoundaryImage. */
+/** Return the highest value of the specified image out of the pixels under a specified 'maskImage'. */
 template<typename TImage>
 itk::Index<2> FindHighestValueInMaskedRegion(const TImage* const image, float& maxValue,
                                              const Mask* const maskImage);

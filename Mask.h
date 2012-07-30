@@ -158,7 +158,8 @@ public:
   template <typename TImage>
   void CopyValidPixelsFromValue(const TImage* const inputImage, const unsigned int value);
 
-  /** Find the boundary of the Mask.*/
+  /** Find the boundary of the Mask. The output image is black with boundary pixels of value
+    * 'outputBoundaryPixelValue'. */
   typedef itk::Image<unsigned char, 2> BoundaryImageType;
   void FindBoundary(BoundaryImageType* const boundary, const PixelTypeEnum& whichSideOfBoundary,
                     const BoundaryImageType::PixelType& outputBoundaryPixelValue = 255) const;
@@ -192,7 +193,8 @@ public:
   template<typename TImage, typename TColor>
   void ApplyToRGBImage(TImage* const image, const TColor& color) const;
 
-  /** Create a mask from a mask image. That is, take a binary image (or grayscale) and convert it to a Mask.*/
+  /** Create a mask from a mask image. That is, take a binary image (or grayscale) and convert it to a Mask.
+    * Consider 'holeColor' as holes, and everything else as valid. */
   template<typename TImage>
   void CreateFromImage(const TImage* const image, const typename TImage::PixelType& holeColor);
 

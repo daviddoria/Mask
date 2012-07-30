@@ -98,7 +98,6 @@ void Mask::ApplyRegionToImageRegion(const itk::ImageRegion<2>& maskRegion, TImag
     }
 }
 
-
 template<typename TImage>
 void Mask::ApplyToScalarImage(TImage* const image, typename TImage::PixelType holeValue) const
 {
@@ -123,7 +122,6 @@ void Mask::ApplyToScalarImage(TImage* const image, typename TImage::PixelType ho
     }
 }
 
-// Create a mask from a mask image.
 template<typename TImage>
 void Mask::CreateFromImage(const TImage* image, const typename TImage::PixelType& holeColor)
 {
@@ -150,7 +148,7 @@ void Mask::CreateFromImage(const TImage* image, const typename TImage::PixelType
 
     ++imageIterator;
     }
-  std::cout << "There were " << counter << " mask pixels." << std::endl;
+  std::cout << "Mask::CreateFromImage: There were " << counter << " mask pixels." << std::endl;
 }
 
 template <typename TImage>
