@@ -1,3 +1,21 @@
+/*=========================================================================
+ *
+ *  Copyright David Doria 2012 daviddoria@gmail.com
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *=========================================================================*/
+
 // STL
 #include <stdexcept>
 
@@ -737,7 +755,8 @@ void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const fl
 
   for(unsigned int dimensionPass = 0; dimensionPass < 2; dimensionPass++) // The image is 2D
     {
-    itk::ImageRegionIterator<TImage> imageIterator(operatingImage, operatingImage->GetLargestPossibleRegion());
+    itk::ImageRegionIterator<TImage> imageIterator(operatingImage,
+                                                   operatingImage->GetLargestPossibleRegion());
 
     while(!imageIterator.IsAtEnd())
       {
@@ -796,8 +815,10 @@ void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const fl
   ITKHelpers::DeepCopy(blurredImage.GetPointer(), output);
 }
 
-template <class TImage>
-void CopyInHoleRegion(const TImage* const input, TImage* const output, const Mask* const mask)
+
+template<typename TImage>
+void CopyAtValues(const TImage* const input, const Mask::PixelType& value,
+                  const Mask* const mask, TImage* const output)
 {
   // It is sometimes desired to copy the hole pixels from an image into the corresponding pixels
   // in a larger image, so we do not do the following.
@@ -812,29 +833,41 @@ void CopyInHoleRegion(const TImage* const input, TImage* const output, const Mas
   if(!output->GetLargestPossibleRegion().IsInside(input->GetLargestPossibleRegion()))
   {
     std::stringstream ss;
-    ss << "Input is not smaller than output! Input: " << input->GetLargestPossibleRegion().GetSize() 
+    ss << "Input is not smaller than output! Input: " << input->GetLargestPossibleRegion().GetSize()
        << " output: " << output->GetLargestPossibleRegion().GetSize();
     throw std::runtime_error(ss.str());
   }
 
-  if(input->GetLargestPossibleRegion().GetSize() != mask->GetLargestPossibleRegion().GetSize())
+  if(input->GetLargestPossibleRegion().GetSize() != output->GetLargestPossibleRegion().GetSize())
   {
     std::stringstream ss;
-    ss << "Input size (" << input->GetLargestPossibleRegion().GetSize() << ") must match mask size ("
-       << mask->GetLargestPossibleRegion().GetSize() << ")";
+    ss << "Input size (" << input->GetLargestPossibleRegion().GetSize() << ") must match output size ("
+       << output->GetLargestPossibleRegion().GetSize() << ")";
     throw std::runtime_error(ss.str());
   }
-  
-  itk::ImageRegionConstIterator<TImage> imageIterator(input, input->GetLargestPossibleRegion());
-  //std::cout << "Hole value is " << static_cast<int>(mask->GetHoleValue()) << std::endl;
-  while(!imageIterator.IsAtEnd())
+
+  itk::ImageRegionConstIterator<Mask> maskIterator(mask, mask->GetLargestPossibleRegion());
+
+  while(!maskIterator.IsAtEnd())
   {
-    if(mask->IsHole(imageIterator.GetIndex()))
+    if(maskIterator.Get() == value)
     {
-      output->SetPixel(imageIterator.GetIndex(), imageIterator.Get());
+      output->SetPixel(maskIterator.GetIndex(), input->GetPixel(maskIterator.GetIndex()));
     }
-    ++imageIterator;
+    ++maskIterator;
   }
+}
+
+template <class TImage>
+void CopyInHoleRegion(const TImage* const input, TImage* const output, const Mask* const mask)
+{
+  CopyAtValues(input, mask->GetHoleValue(), mask, output);
+}
+
+template <class TImage>
+void CopyInValidRegion(const TImage* const input, TImage* const output, const Mask* const mask)
+{
+  CopyAtValues(input, mask->GetValidValue(), mask, output);
 }
 
 template<typename TImage>

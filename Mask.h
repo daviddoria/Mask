@@ -1,6 +1,6 @@
 /*=========================================================================
  *
- *  Copyright David Doria 2011 daviddoria@gmail.com
+ *  Copyright David Doria 2012 daviddoria@gmail.com
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -166,39 +166,53 @@ public:
                             const PixelTypeEnum& whichSideOfBoundary,
                             const BoundaryImageType::PixelType& outputBoundaryPixelValue = 255) const;
 
-  /** Recolor the hole pixels in 'image' a specified 'color'.*/
-  template<typename TImage, typename TColor>
-  void ApplyColorToImage(TImage* const image, const TColor& color) const;
+  /** Recolor the hole pixels in 'image' a specified 'color'. 'color' cannot have a
+    * default value (even itk::NumericTraits<T>::ZeroValue())
+    * because for a itk::VectorImage<ScalarType, 2>, the ::PixelType is a
+    * itk::VariableLengthVector<ScalarType>, which does not have a size,
+    * so therefore the ZeroValue() function will not do what we'd expect. */
+  template<typename TImage>
+  void ApplyToImage(TImage* const image, const typename TImage::PixelType& color) const;
+
+  /** Recolor the hole pixels in 'maskRegion' in 'imageRegion' in 'image' a specified 'color'.*/
+  template<typename TImage>
+  void ApplyRegionToImageRegion(const itk::ImageRegion<2>& maskRegion, TImage* const image,
+                                const itk::ImageRegion<2>& imageRegion,
+                                const typename TImage::PixelType& color) const;
 
   /** Change the hole pixels in 'image' to a specified 'holeValue'. 'holeValue' is not const because it might
-   need to be modified if it is not provided or is invalid. */
+    * need to be modified if it is not provided or is invalid. */
   template<typename TImage>
   void ApplyToScalarImage(TImage* const image,
-                          typename TImage::PixelType holeValue = itk::NumericTraits<typename TImage::PixelType>::ZeroValue()) const;
-                          //typename TImage::PixelType holeValue = typename TImage::PixelType()) const;
+                          typename TImage::PixelType holeValue =
+                            itk::NumericTraits<typename TImage::PixelType>::ZeroValue()) const;
 
-  /** Recolor the hole pixels in 'image' a specified 'color'.*/
+  /** Recolor the hole pixels in 'image' a specified 'color'.
+   * Here 'TColor' must have .red(), .green(), and .blue() functions.*/
   template<typename TImage, typename TColor>
-  void ApplyToVectorImage(TImage* const image, const TColor& color) const;
+  void ApplyToRGBImage(TImage* const image, const TColor& color) const;
 
-  /** Create a mask from a mask image.*/
+  /** Create a mask from a mask image. That is, take a binary image (or grayscale) and convert it to a Mask.*/
   template<typename TImage>
   void CreateFromImage(const TImage* const image, const typename TImage::PixelType& holeColor);
 
   /** Get a list of the valid neighbors of a pixel.*/
   std::vector<itk::Index<2> > GetValidNeighbors(const itk::Index<2>& pixel) const;
 
-  /** Determine if a pixel has at least 1 hole neighbor.*/
+  /** Determine if a pixel has at least 1 hole 8-neighbor.*/
   bool HasHoleNeighbor(const itk::Index<2>& pixel) const;
 
-  /** Determine if a pixel has at least 1 valid neighbor.*/
+  /** Determine if a pixel has at least 1 valid 8-neighbor.*/
   bool HasValidNeighbor(const itk::Index<2>& pixel) const;
 
+  /** Determine if a pixel has at least 1 valid 4-neighbor.*/
   bool HasValid4Neighbor(const itk::Index<2>& pixel);
 
+  /** Determine which of the 4-neighbors of a 'pixel' are valid and inside 'region'.*/
   std::vector<itk::Index<2> > GetValid4NeighborIndices(const itk::Index<2>& pixel,
                                                        const itk::ImageRegion<2>& region);
 
+  /** Determine which of the 4-neighbors of a 'pixel' are valid.*/
   std::vector<itk::Index<2> > GetValid4Neighbors(const itk::Index<2>& pixel);
 
   /** Get a list of the hole neighbors of a pixel.*/
@@ -210,11 +224,15 @@ public:
   /** Get a list of the offsets of the hole neighbors of a pixel.*/
   std::vector<itk::Offset<2> > GetHoleNeighborOffsets(const itk::Index<2>& pixel) const;
 
-  /** Get a list of the valid pixels in a region.*/
+  /** Get a list of the valid pixels in a region. 'region' is not passed by reference because
+    * it is cropped by the image before computing the valid pixels. */
   std::vector<itk::Index<2> > GetValidPixelsInRegion(itk::ImageRegion<2> region) const;
 
-  /** Get a list of the hole pixels in a region.*/
+  /** Get a list of the hole pixels in a region. 'region' is not passed by reference because
+    * it is cropped by the image before computing the valid pixels. */
   std::vector<itk::Index<2> > GetHolePixelsInRegion(itk::ImageRegion<2> region) const;
+
+  /** Get a list of the hole pixels in the mask.*/
   std::vector<itk::Index<2> > GetHolePixels() const;
 
   /** Get a list of the offsets of the valid pixels in a region.*/
@@ -235,7 +253,16 @@ public:
   /** Count hole pixels in the whole mask.*/
   unsigned int CountHolePixels() const;
 
+  /** Determine if the mask has any valid pixels.*/
+  bool HasValidPixels() const;
+
+  /** Determine if the mask has any valid pixels in 'region'.*/
+  bool HasValidPixels(const itk::ImageRegion<2>& region) const;
+
+  /** Determine if the mask has any hole pixels.*/
   bool HasHolePixels() const;
+
+  /** Determine if the mask has any hole pixels in 'region'.*/
   bool HasHolePixels(const itk::ImageRegion<2>& region) const;
 
   /** Count valid pixels in a region.*/
@@ -244,6 +271,7 @@ public:
   /** Count valid pixels in a region.*/
   unsigned int CountValidPatches(const unsigned int patchRadius) const;
 
+  /** Find the first valid patch of radius 'patchRadius' in raster scan order.*/
   itk::ImageRegion<2> FindFirstValidPatch(const unsigned int patchRadius);
 
   /** Count valid pixels in the whole mask.*/
@@ -266,13 +294,17 @@ private:
   Mask(const Self &);    //purposely not implemented
   void operator=(const Self &); //purposely not implemented
 
+  /** Constructor. */
   Mask();
 
-  unsigned char HoleValue; // Pixels with this value will be filled.
-  unsigned char ValidValue; // Pixels with this value will not be filled - they are the source region.
+  /** Pixels with this value indicate a hole. */
+  unsigned char HoleValue;
+
+  /** Pixels with this value are valid. */
+  unsigned char ValidValue;
 
 };
 
-#include "Mask.hxx"
+#include "Mask.hpp"
 
 #endif

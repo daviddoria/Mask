@@ -154,47 +154,15 @@ itk::ImageRegion<2> RandomValidRegion(const Mask* const mask, const unsigned int
   return randomRegion;
 }
 
-itk::ImageRegion<2> ComputeHoleBoundingBox(const Mask* const mask)
+itk::ImageRegion<2> ComputeValidBoundingBox(const Mask* const mask)
 {
-  assert(mask);
-
-  itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(mask, mask->GetLargestPossibleRegion());
-
-  // Initialize backwards
-  itk::Index<2> min = {{mask->GetLargestPossibleRegion().GetSize()[0],
-                        mask->GetLargestPossibleRegion().GetSize()[1]}};
-  itk::Index<2> max = {{0, 0}};
-
-  while(!maskIterator.IsAtEnd())
-    {
-    itk::Index<2> currentIndex = maskIterator.GetIndex();
-    if(mask->IsHole(currentIndex))
-    {
-      if(currentIndex[0] < min[0])
-      {
-        min[0] = currentIndex[0];
-      }
-      if(currentIndex[1] < min[1])
-      {
-        min[1] = currentIndex[1];
-      }
-      if(currentIndex[0] > max[0])
-      {
-        max[0] = currentIndex[0];
-      }
-      if(currentIndex[1] > max[1])
-      {
-        max[1] = currentIndex[1];
-      }
-    }
-    ++maskIterator;
-    }
-
-  itk::Size<2> size = {{max[0] - min[0] + 1, max[1] - min[1] + 1}}; // The +1's are fencepost error correction
-  itk::ImageRegion<2> region(min, size);
-  return region;
+  return ITKHelpers::ComputeBoundingBox(mask, mask->GetValidValue());
 }
 
+itk::ImageRegion<2> ComputeHoleBoundingBox(const Mask* const mask)
+{
+  return ITKHelpers::ComputeBoundingBox(mask, mask->GetHoleValue());
+}
 
 void SetMaskTransparency(const Mask* const input, vtkImageData* outputImage)
 {
@@ -302,10 +270,7 @@ itk::ImageRegion<2> GetRandomValidPatchInRegion(const Mask* const mask,
     numberOfAttempts++;
     if(numberOfAttempts > maxNumberOfAttempts)
     {
-      // for now, return the failure situation without trying hard. See if this is the bottleneck.
-      itk::Size<2> regionSize = {{0,0}};
-      region.SetSize(regionSize);
-      return region;
+      throw std::runtime_error("The numberOfAttempts exceeded maxNumberOfAttempts!");
     }
   } while(!(mask->GetLargestPossibleRegion().IsInside(region) && mask->IsValid(region)));
 

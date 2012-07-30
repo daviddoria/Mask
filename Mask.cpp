@@ -1,6 +1,6 @@
 /*=========================================================================
  *
- *  Copyright David Doria 2011 daviddoria@gmail.com
+ *  Copyright David Doria 2012 daviddoria@gmail.com
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -151,6 +151,23 @@ unsigned int Mask::CountBoundaryPixels() const
 unsigned int Mask::CountHolePixels(const itk::ImageRegion<2>& region) const
 {
   return GetHolePixelsInRegion(region).size();
+}
+
+bool Mask::HasValidPixels() const
+{
+  return HasValidPixels(this->GetLargestPossibleRegion());
+}
+
+bool Mask::HasValidPixels(const itk::ImageRegion<2>& region) const
+{
+  if(CountValidPixels(region) > 0)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
 }
 
 bool Mask::HasHolePixels() const
