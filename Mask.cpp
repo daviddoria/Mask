@@ -247,6 +247,11 @@ std::vector<itk::Offset<2> > Mask::GetHoleOffsetsInRegion(itk::ImageRegion<2> re
   return holeOffsets;
 }
 
+std::vector<itk::Index<2> > Mask::GetValidPixels() const
+{
+  return GetValidPixelsInRegion(this->GetLargestPossibleRegion());
+}
+
 std::vector<itk::Index<2> > Mask::GetValidPixelsInRegion(itk::ImageRegion<2> region) const
 {
   region.Crop(this->GetLargestPossibleRegion());

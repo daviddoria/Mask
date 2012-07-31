@@ -238,6 +238,9 @@ public:
     * it is cropped by the image before computing the valid pixels. */
   std::vector<itk::Index<2> > GetValidPixelsInRegion(itk::ImageRegion<2> region) const;
 
+  /** Get a list of the valid pixels in the mask.*/
+  std::vector<itk::Index<2> > GetValidPixels() const;
+
   /** Get a list of the hole pixels in a region. 'region' is not passed by reference because
     * it is cropped by the image before computing the valid pixels. */
   std::vector<itk::Index<2> > GetHolePixelsInRegion(itk::ImageRegion<2> region) const;
