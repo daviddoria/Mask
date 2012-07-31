@@ -417,12 +417,14 @@ void Mask::OutputMembers() const
 
 void Mask::CopyInformationFrom(const Mask* const inputMask)
 {
+  assert(inputMask);
   this->SetHoleValue(inputMask->GetHoleValue());
   this->SetValidValue(inputMask->GetValidValue());
 }
 
 void Mask::DeepCopyFrom(const Mask* const inputMask)
 {
+  assert(inputMask);
   this->SetRegions(inputMask->GetLargestPossibleRegion());
   this->Allocate();
 
