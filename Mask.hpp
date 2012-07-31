@@ -21,6 +21,9 @@
 // ITK
 #include "itkImageRegionIterator.h"
 
+// Submodules
+#include <ITKHelpers/ITKHelpers.h>
+
 template<typename TImage, typename TColor>
 void Mask::ApplyToRGBImage(TImage* const image, const TColor& color) const
 {
@@ -123,20 +126,54 @@ void Mask::ApplyToScalarImage(TImage* const image, typename TImage::PixelType ho
 }
 
 template<typename TImage>
-void Mask::CreateFromImage(const TImage* image, const typename TImage::PixelType& holeColor)
+void Mask::CreateFromImage(const TImage* const image, const typename TImage::PixelType& holeValue,
+                           const typename TImage::PixelType& validValue)
+{
+  this->SetRegions(image->GetLargestPossibleRegion());
+  this->Allocate();
+
+  ITKHelpers::DeepCopy(image, this);
+  this->HoleValue = holeValue;
+  this->ValidValue = validValue;
+
+//   itk::ImageRegionConstIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
+// 
+//   //std::cout << "Hole value: " << holeValue << std::endl;
+//   unsigned int counter = 0;
+//   while(!imageIterator.IsAtEnd())
+//     {
+//     typename TImage::PixelType currentPixel = imageIterator.Get();
+//     //std::cout << "Current color: " << currentPixel << std::endl;
+//     if(currentPixel == holeValue)
+//       {
+//       this->SetPixel(imageIterator.GetIndex(), this->HoleValue);
+//       counter++;
+//       }
+//     else if(currentPixel == validValue)
+//       {
+//       this->SetPixel(imageIterator.GetIndex(), this->ValidValue);
+//       }
+// 
+//     ++imageIterator;
+//     }
+//   std::cout << "Mask::CreateFromImage: There were " << counter << " mask pixels." << std::endl;
+}
+
+template<typename TImage>
+void Mask::CreateFromImage(const TImage* image, const typename TImage::PixelType& holeValue)
 {
   this->SetRegions(image->GetLargestPossibleRegion());
   this->Allocate();
 
   itk::ImageRegionConstIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
 
-  //std::cout << "Hole color: " << holeColor << std::endl;
+  //std::cout << "Hole value: " << holeValue << std::endl;
   unsigned int counter = 0;
   while(!imageIterator.IsAtEnd())
     {
     typename TImage::PixelType currentPixel = imageIterator.Get();
-    //std::cout << "Current color: " << currentPixel << std::endl;
-    if(currentPixel == holeColor)
+    //std::cout << "Current value: " << currentPixel << std::endl;
+    if(currentPixel == holeValue)
       {
       this->SetPixel(imageIterator.GetIndex(), this->HoleValue);
       counter++;

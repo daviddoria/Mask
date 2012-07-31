@@ -194,9 +194,14 @@ public:
   void ApplyToRGBImage(TImage* const image, const TColor& color) const;
 
   /** Create a mask from a mask image. That is, take a binary image (or grayscale) and convert it to a Mask.
-    * Consider 'holeColor' as holes, and everything else as valid. */
+    * Consider 'holeValue' as holes, and everything else as valid. */
   template<typename TImage>
-  void CreateFromImage(const TImage* const image, const typename TImage::PixelType& holeColor);
+  void CreateFromImage(const TImage* const image, const typename TImage::PixelType& holeValue);
+
+  /** Create a mask from a mask image. That is, take a binary image (or grayscale) and convert it to a Mask. */
+  template<typename TImage>
+  void CreateFromImage(const TImage* const image, const typename TImage::PixelType& holeValue,
+                       const typename TImage::PixelType& validValue);
 
   /** Get a list of the valid neighbors of a pixel.*/
   std::vector<itk::Index<2> > GetValidNeighbors(const itk::Index<2>& pixel) const;

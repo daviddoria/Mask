@@ -21,7 +21,7 @@
 
 // Custom
 #include "Mask.h"
-#include "ITKHelpers/ITKHelpers.h"
+#include <ITKHelpers/ITKHelpers.h>
 
 // ITK
 #include "itkBresenhamLine.h"

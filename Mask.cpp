@@ -19,8 +19,8 @@
 #include "Mask.h"
 
 // Submodules
-#include "ITKHelpers/Helpers/Helpers.h"
-#include "ITKHelpers/ITKHelpers.h"
+#include <Helpers/Helpers.h>
+#include <ITKHelpers/ITKHelpers.h>
 
 // ITK
 #include "itkBinaryContourImageFilter.h"

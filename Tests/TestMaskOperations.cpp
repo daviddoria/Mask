@@ -1,7 +1,8 @@
 #include "Mask.h"
 #include "MaskOperations.h"
 
-#include "ITKHelpers/ITKHelpers.h"
+// Submodules
+#include <ITKHelpers/ITKHelpers.h>
 
 static void TestComputeHoleBoundingBox();
 static void TestInterpolateHole();

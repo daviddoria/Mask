@@ -23,7 +23,7 @@
 #include "Mask.h"
 
 // Submodules
-#include "ITKHelpers/ITKHelpers.h"
+#include <ITKHelpers/ITKHelpers.h>
 
 // ITK
 #include "itkIndex.h"

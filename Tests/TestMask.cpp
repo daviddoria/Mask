@@ -1,6 +1,7 @@
 #include "Mask.h"
 
-#include "ITKHelpers/ITKHelpers.h"
+// Submodules
+#include <ITKHelpers/ITKHelpers.h>
 
 void TestFindBoundaryInRegion();
 
