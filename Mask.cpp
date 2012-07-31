@@ -343,7 +343,16 @@ bool Mask::IsValid(const itk::Index<2>& index) const
   return false;
 }
 
-void Mask::Invert()
+void Mask::InvertInterpretation()
+{
+  unsigned char oldHoleValue = this->HoleValue;
+
+  this->HoleValue = this->ValidValue;
+
+  this->ValidValue = oldHoleValue;
+}
+
+void Mask::InvertData()
 {
   // Exchange HoleValue and ValidValue, but leave everything else alone.
   itk::ImageRegionIterator<Mask> maskIterator(this, this->GetLargestPossibleRegion());

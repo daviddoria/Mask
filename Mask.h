@@ -100,8 +100,11 @@ public:
   void CreateImage(UnsignedCharImageType* const image, const unsigned char holeColor,
                          const unsigned char validColor, const unsigned char otherColor);
 
-  /** Invert the mask by switching the hole and valid pixel values.*/
-  void Invert();
+  /** Invert the mask by setting all hole pixels to ValidValue and all valid pixels to HoleValue.*/
+  void InvertData();
+
+  /** Invert the mask by switching HoleValue and ValidValue.*/
+  void InvertInterpretation();
 
   /** Snap the pixel values to either 'hole' or 'valid'.*/
   void Cleanup();
