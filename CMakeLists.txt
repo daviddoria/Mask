@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
 
-FIND_PACKAGE(Qt4 REQUIRED)
-INCLUDE(${QT_USE_FILE})
-
 if(NOT TARGET ITKHelpers)
   add_subdirectory(ITKHelpers)
   include_directories(${ITKHelpers_includes})
