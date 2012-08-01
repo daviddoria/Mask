@@ -34,9 +34,10 @@ endif(Mask_BuildTests)
 add_library(Mask Mask.cpp MaskOperations.cpp)
 target_link_libraries(Mask ITKHelpers)
 
-# Only build the MaskQt file if Qt is available
-FIND_PACKAGE(Qt4)
-if(DEFINED QT4_FOUND)
+# Only build the MaskQt library if the user wants it
+SET(Mask_BuildMaskQt OFF CACHE BOOL "Build MaskQt?")
+if(Mask_BuildMaskQt)
+  FIND_PACKAGE(Qt4)
   INCLUDE(${QT_USE_FILE})
   add_library(MaskQt Mask.cpp MaskQt.cpp)
-endif()
+endif(Mask_BuildMaskQt)
