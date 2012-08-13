@@ -1,3 +1,6 @@
+project(Mask)
+SET(CMAKE_INCLUDE_CURRENT_DIR ON)
+
 cmake_minimum_required(VERSION 2.8)
 
 if(NOT TARGET ITKHelpers)
@@ -43,3 +46,7 @@ if(Mask_BuildMaskQt)
   INCLUDE(${QT_USE_FILE})
   add_library(MaskQt Mask.cpp MaskQt.cpp)
 endif(Mask_BuildMaskQt)
+
+
+GET_DIRECTORY_PROPERTY(AllMaskIncludes INCLUDE_DIRECTORIES)
+message("AllMaskIncludes include directories: ${AllMaskIncludes}")
