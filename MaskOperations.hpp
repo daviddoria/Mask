@@ -424,8 +424,8 @@ void MedianFilterInHole(TImage* const image, const Mask* const mask, const unsig
     {
     if(mask->IsHole(imageIterator.GetIndex()))
       {
-      std::cout << "Changing " << image->GetPixel(imageIterator.GetIndex()) << " to "
-                << medianFilter->GetOutput()->GetPixel(imageIterator.GetIndex()) << std::endl;
+//       std::cout << "Changing " << image->GetPixel(imageIterator.GetIndex()) << " to "
+//                 << medianFilter->GetOutput()->GetPixel(imageIterator.GetIndex()) << std::endl;
       imageIterator.Set(medianFilter->GetOutput()->GetPixel(imageIterator.GetIndex()));
       }
 
