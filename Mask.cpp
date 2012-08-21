@@ -130,7 +130,8 @@ unsigned int Mask::CountBoundaryPixels(const itk::ImageRegion<2>& region) const
   unsigned int numberOfBoundaryPixels = 0;
   while(!maskIterator.IsAtEnd())
     {
-    if(this->IsHole(maskIterator.GetIndex()))
+    //if(this->IsHole(maskIterator.GetIndex()))
+    if(maskIterator.Get() == this->HoleValue)
     {
       if(this->HasValidNeighbor(maskIterator.GetIndex()))
         {
@@ -217,7 +218,8 @@ std::vector<itk::Offset<2> > Mask::GetValidOffsetsInRegion(itk::ImageRegion<2> r
 
   while(!iterator.IsAtEnd())
     {
-    if(this->IsValid(iterator.GetIndex()))
+    //if(this->IsValid(iterator.GetIndex()))
+    if(iterator.Get() == this->ValidValue)
       {
       validOffsets.push_back(iterator.GetIndex() - region.GetIndex());
       }
@@ -237,7 +239,8 @@ std::vector<itk::Offset<2> > Mask::GetHoleOffsetsInRegion(itk::ImageRegion<2> re
 
   while(!iterator.IsAtEnd())
     {
-    if(this->IsHole(iterator.GetIndex()))
+    //if(this->IsHole(iterator.GetIndex()))
+    if(iterator.Get() == this->HoleValue)
       {
       holeOffsets.push_back(iterator.GetIndex() - region.GetIndex());
       }
@@ -263,7 +266,12 @@ std::vector<itk::Index<2> > Mask::GetValidPixelsInRegion(itk::ImageRegion<2> reg
 
   while(!iterator.IsAtEnd())
     {
-    if(this->IsValid(iterator.GetIndex()))
+//    if(this->IsValid(iterator.GetIndex()))
+//      {
+//      validPixels.push_back(iterator.GetIndex());
+//      }
+
+    if(iterator.Get() == this->ValidValue)
       {
       validPixels.push_back(iterator.GetIndex());
       }
@@ -289,11 +297,15 @@ std::vector<itk::Index<2> > Mask::GetHolePixelsInRegion(itk::ImageRegion<2> regi
 
   while(!iterator.IsAtEnd())
     {
-    if(this->IsHole(iterator.GetIndex()))
+    // Don't do this, because it loses the coherency of using an iterator.
+//    if(this->IsHole(iterator.GetIndex()))
+//      {
+//      holePixels.push_back(iterator.GetIndex());
+//      }
+    if(iterator.Get() == this->HoleValue)
       {
       holePixels.push_back(iterator.GetIndex());
       }
-
     ++iterator;
     }
   return holePixels;
@@ -316,7 +328,8 @@ bool Mask::IsHole(const itk::ImageRegion<2>& region) const
 
   while(!maskIterator.IsAtEnd())
     {
-    if(!this->IsHole(maskIterator.GetIndex()))
+    //if(!this->IsHole(maskIterator.GetIndex()))
+    if(maskIterator.Get() != this->HoleValue)
       {
       return false;
       }
@@ -334,7 +347,8 @@ bool Mask::IsValid(const itk::ImageRegion<2>& region) const
 
   while(!maskIterator.IsAtEnd())
     {
-    if(!this->IsValid(maskIterator.GetIndex()))
+    //if(!this->IsValid(maskIterator.GetIndex()))
+    if(maskIterator.Get() != this->ValidValue)
       {
       //std::cout << "Mask::IsValid - Pixel " << maskIterator.GetIndex() << " has value " << static_cast<unsigned int>(maskIterator.Get())
       //          << " which makes the region invalid because Mask::ValidValue = " << static_cast<unsigned int>(this->ValidValue) << std::endl;
@@ -710,7 +724,6 @@ bool Mask::HasValid4Neighbor(const itk::Index<2>& pixel)
 
   return false;
 }
-
 
 std::vector<itk::Index<2> > Mask::GetValid4Neighbors(const itk::Index<2>& pixel)
 {
