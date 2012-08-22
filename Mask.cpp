@@ -653,28 +653,38 @@ std::vector<itk::Index<2> > Mask::GetValidNeighbors(const itk::Index<2>& pixel) 
   return ITKHelpers::Get8NeighborsWithValue(pixel, this, this->ValidValue);
 }
 
+std::vector<itk::Index<2> > Mask::GetValidNeighborsInRegion(const itk::Index<2>& pixel, const itk::ImageRegion<2>& region) const
+{
+  return ITKHelpers::Get8NeighborsInRegionWithValue(pixel, this, region, this->ValidValue);
+}
+
+bool Mask::HasHoleNeighborInRegion(const itk::Index<2>& pixel, const itk::ImageRegion<2>& region) const
+{
+  // Return true of there are more than 0 neighbors
+  return GetHoleNeighborsInRegion(pixel, region).size() > 0;
+}
+
 bool Mask::HasHoleNeighbor(const itk::Index<2>& pixel) const
 {
-  if(GetHoleNeighbors(pixel).size() > 0)
-    {
-    return true;
-    }
-  return false;
+  // Return true of there are more than 0 neighbors
+  return GetHoleNeighbors(pixel).size() > 0;
 }
 
 bool Mask::HasValidNeighbor(const itk::Index<2>& pixel) const
 {
-  if(GetValidNeighbors(pixel).size() > 0)
-    {
-    return true;
-    }
-  return false;
+  // Return true of there are more than 0 neighbors
+  return GetValidNeighbors(pixel).size() > 0;
 }
 
 /** Get a list of the hole neighbors of a pixel.*/
 std::vector<itk::Index<2> > Mask::GetHoleNeighbors(const itk::Index<2>& pixel) const
 {
   return ITKHelpers::Get8NeighborsWithValue(pixel, this, this->HoleValue);
+}
+
+std::vector<itk::Index<2> > Mask::GetHoleNeighborsInRegion(const itk::Index<2>& pixel, const itk::ImageRegion<2>& region) const
+{
+  return ITKHelpers::Get8NeighborsInRegionWithValue(pixel, this, region, this->HoleValue);
 }
 
 std::vector<itk::Offset<2> > Mask::GetValidNeighborOffsets(const itk::Index<2>& pixel) const

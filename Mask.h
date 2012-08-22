@@ -209,8 +209,14 @@ public:
   /** Get a list of the valid neighbors of a pixel.*/
   std::vector<itk::Index<2> > GetValidNeighbors(const itk::Index<2>& pixel) const;
 
+  /** Get a list of the valid neighbors of a 'pixel' in 'region'.*/
+  std::vector<itk::Index<2> > GetValidNeighborsInRegion(const itk::Index<2>& pixel, const itk::ImageRegion<2>& region) const;
+
   /** Determine if a pixel has at least 1 hole 8-neighbor.*/
   bool HasHoleNeighbor(const itk::Index<2>& pixel) const;
+
+  /** Determine if a pixel has at least 1 hole 8-neighbor in 'region'.*/
+  bool HasHoleNeighborInRegion(const itk::Index<2>& pixel, const itk::ImageRegion<2>& region) const;
 
   /** Determine if a pixel has at least 1 valid 8-neighbor.*/
   bool HasValidNeighbor(const itk::Index<2>& pixel) const;
@@ -227,6 +233,9 @@ public:
 
   /** Get a list of the hole neighbors of a pixel.*/
   std::vector<itk::Index<2> > GetHoleNeighbors(const itk::Index<2>& pixel) const;
+
+  /** Get a list of the hole neighbors of a 'pixel' in 'region'.*/
+  std::vector<itk::Index<2> > GetHoleNeighborsInRegion(const itk::Index<2>& pixel, const itk::ImageRegion<2>& region) const;
 
   /** Get a list of the offsets of the valid neighbors of a pixel.*/
   std::vector<itk::Offset<2> > GetValidNeighborOffsets(const itk::Index<2>& pixel) const;
