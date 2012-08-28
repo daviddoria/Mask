@@ -664,9 +664,16 @@ void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::I
 
 template<typename TImage>
 void WriteMaskedRegionPNG(const TImage* const image, const Mask* mask,
-                          const itk::ImageRegion<2>& region, const std::string& filename,
+                          itk::ImageRegion<2> region, const std::string& filename,
                           const typename TImage::PixelType& holeColor)
 {
+  region.Crop(image->GetLargestPossibleRegion());
+
+  if(region.GetSize()[0] == 0 || region.GetSize()[1] == 0 )
+  {
+    throw std::runtime_error("Cropped region is 0 in at least one dimension!");
+  }
+
   typedef itk::RegionOfInterestImageFilter<TImage, TImage> RegionOfInterestImageFilterType;
   typename RegionOfInterestImageFilterType::Pointer regionOfInterestImageFilter =
             RegionOfInterestImageFilterType::New();
@@ -686,27 +693,23 @@ void WriteMaskedRegionPNG(const TImage* const image, const Mask* mask,
                                                  GetLargestPossibleRegion());
 
   while(!imageIterator.IsAtEnd())
-    {
-    typename TImage::PixelType pixel = imageIterator.Get();
+  {
+//    typename TImage::PixelType pixel = imageIterator.Get();
 
     itk::Index<2> index = imageIterator.GetIndex();
 
     if(regionOfInterestMaskFilter->GetOutput()->IsHole(imageIterator.GetIndex()))
-      {
+    {
       regionOfInterestImageFilter->GetOutput()->SetPixel(index, holeColor);
-      }
-
-    ++imageIterator;
     }
 
-  ITKHelpers::RGBImageType::Pointer rgbImage = ITKHelpers::RGBImageType::New();
-  //ITKHelpers::VectorImageToRGBImage(regionOfInterestImageFilter->GetOutput(), rgbImage.GetPointer());
+    ++imageIterator;
+  }
 
-  typename itk::ImageFileWriter<ITKHelpers::RGBImageType>::Pointer writer =
-             itk::ImageFileWriter<ITKHelpers::RGBImageType>::New();
-  writer->SetFileName(filename);
-  writer->SetInput(rgbImage.GetPointer());
-  writer->Update();
+  ITKHelpers::RGBImageType::Pointer rgbImage = ITKHelpers::RGBImageType::New();
+  ITKHelpers::VectorImageToRGBImage(regionOfInterestImageFilter->GetOutput(), rgbImage.GetPointer());
+
+  ITKHelpers::WriteImage(rgbImage.GetPointer(), filename);
 }
 
 

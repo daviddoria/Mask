@@ -43,9 +43,10 @@ void WriteMaskedRegion(const TImage* const image, const Mask* mask, const itk::I
                        const typename TImage::PixelType& holeColor);
 
 /** Write a 'region' of an 'image' to 'filename', coloring any invalid pixels
- * in 'mask' the color 'holeColor'. */
+ * in 'mask' the color 'holeColor'. 'region' is not const& because we crop it by the image's full
+ * region to write only the portion of the region that overlaps the image. */
 template<typename TImage>
-void WriteMaskedRegionPNG(const TImage* const image, const Mask* mask, const itk::ImageRegion<2>& region,
+void WriteMaskedRegionPNG(const TImage* const image, const Mask* mask, itk::ImageRegion<2> region,
                           const std::string& filename, const typename TImage::PixelType& holeColor);
 
 void ITKImageToVTKImageMasked(const ITKHelpers::FloatVectorImageType* const image, const Mask* const mask,
