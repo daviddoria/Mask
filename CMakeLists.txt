@@ -39,6 +39,8 @@ endif(Mask_BuildTests)
 add_library(Mask Mask.cpp MaskOperations.cpp)
 target_link_libraries(Mask ITKHelpers)
 
+add_custom_target(MaskSources SOURCES Mask.h MaskQt.h Mask.hpp MaskOperations.hpp)
+
 # Only build the MaskQt library if the user wants it
 SET(Mask_BuildMaskQt OFF CACHE BOOL "Build MaskQt?")
 if(Mask_BuildMaskQt)
