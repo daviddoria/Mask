@@ -717,9 +717,10 @@ void WriteMaskedRegionPNG(const TImage* const image, const Mask* mask,
 template <typename TPixel>
 struct Contribution
 {
-  float weight;
-  TPixel value;
-  itk::Offset<2> offset;
+  Contribution() : Weight(0.0f), Value(itk::NumericTraits<TPixel>::Zero){}
+  float Weight;
+  TPixel Value;
+  itk::Offset<2> Offset;
 };
 
 template <typename TImage>
@@ -751,9 +752,12 @@ void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const fl
 
   // Create the output image - data will be deep copied into it
   typename TImage::Pointer blurredImage = TImage::New();
-  ITKHelpers::InitializeImage<TImage>(blurredImage, inputImage->GetLargestPossibleRegion());
+  ITKHelpers::InitializeImage(blurredImage.GetPointer(), inputImage->GetLargestPossibleRegion());
 
-  // Initialize
+  // We apply the filter to the same image, one dimension at a time. To do this,
+  // instead of applying it to the 'input' the first pass, then needing to copy
+  // the output to the input before running the next pass, we instead create
+  // an intermediate image that is used each pass.
   typename TImage::Pointer operatingImage = TImage::New();
   ITKHelpers::DeepCopy(inputImage, operatingImage.GetPointer());
 
@@ -782,13 +786,13 @@ void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const fl
         // dimensions except the dimension of the current pass
         itk::Offset<2> offset = ITKHelpers::OffsetFrom1DOffset(gaussianOperator.GetOffset(i), dimensionPass);
 
-        itk::Index<2> pixel = centerPixel + offset;
-        if(blurredImage->GetLargestPossibleRegion().IsInside(pixel) && mask->IsValid(pixel))
+        itk::Index<2> index = centerPixel + offset;
+        if(blurredImage->GetLargestPossibleRegion().IsInside(index) && mask->IsValid(index))
         {
           ContributionType contribution;
-          contribution.weight = gaussianOperator.GetElement(i);
-          contribution.value = operatingImage->GetPixel(pixel);
-          contribution.offset = ITKHelpers::OffsetFrom1DOffset(gaussianOperator.GetOffset(i), dimensionPass);
+          contribution.Weight = gaussianOperator.GetElement(i);
+          contribution.Value = operatingImage->GetPixel(index);
+          contribution.Offset = offset;
           contributions.push_back(contribution);
         }
       }
@@ -796,17 +800,20 @@ void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const fl
       float totalWeight = 0.0f;
       for(unsigned int i = 0; i < contributions.size(); i++)
       {
-        totalWeight += contributions[i].weight;
+        totalWeight += contributions[i].Weight;
       }
 
       // Determine the new pixel value
-      typename TImage::PixelType newPixelValue = itk::NumericTraits<typename TImage::PixelType>::Zero;
+//      typename TImage::PixelType newPixelValue = itk::NumericTraits<typename TImage::PixelType>::Zero;
+      typedef typename TypeTraits<typename TImage::PixelType>::LargerType LargerType;
+      LargerType newPixelValue = itk::NumericTraits<LargerType>::Zero;
 
       for(unsigned int i = 0; i < contributions.size(); i++)
       {
-        itk::Index<2> contributionIndex = centerPixel + contributions[i].offset;
-        float contributionWeight = contributions[i].weight/totalWeight;
-        newPixelValue = newPixelValue + (operatingImage->GetPixel(contributionIndex) * contributionWeight);
+        itk::Index<2> contributionIndex = centerPixel + contributions[i].Offset;
+        float contributionWeight = contributions[i].Weight/totalWeight;
+        newPixelValue += static_cast<LargerType>(operatingImage->GetPixel(contributionIndex))
+                         * contributionWeight;
       }
 
       blurredImage->SetPixel(centerPixel, newPixelValue);

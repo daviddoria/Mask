@@ -139,10 +139,12 @@ void CreateMask(Mask* const mask)
 
 void TestMaskedBlur()
 {
+  // Scalar
+  {
   typedef itk::Image<unsigned char, 2> ImageType;
   ImageType::Pointer image = ImageType::New();
   CreateImage(image.GetPointer());
-  ITKHelpers::WriteImage(image.GetPointer(), "Image.png");
+  ITKHelpers::WriteImage(image.GetPointer(), "ScalarImage.png");
 
   Mask::Pointer mask = Mask::New();
   CreateMask(mask);
@@ -153,5 +155,25 @@ void TestMaskedBlur()
   ImageType::Pointer output = ImageType::New();
   MaskOperations::MaskedBlur(image.GetPointer(), mask, blurVariance, output.GetPointer());
 
-  ITKHelpers::WriteImage(output.GetPointer(), "Blurred.png");
+  ITKHelpers::WriteImage(output.GetPointer(), "ScalarBlurred.png");
+  }
+
+  // Vector
+  {
+  typedef itk::Image<itk::CovariantVector<unsigned char, 3>, 2> ImageType;
+  ImageType::Pointer image = ImageType::New();
+  CreateImage(image.GetPointer());
+  ITKHelpers::WriteImage(image.GetPointer(), "VectorImage.png");
+
+  Mask::Pointer mask = Mask::New();
+  CreateMask(mask);
+  std::cout << "Mask hole value: " << static_cast<int>(mask->GetHoleValue()) << std::endl;
+  ITKHelpers::WriteImage(mask.GetPointer(), "Mask.png");
+
+  float blurVariance = 2.0f;
+  ImageType::Pointer output = ImageType::New();
+  MaskOperations::MaskedBlur(image.GetPointer(), mask, blurVariance, output.GetPointer());
+
+  ITKHelpers::WriteImage(output.GetPointer(), "VectorBlurred.png");
+  }
 }
