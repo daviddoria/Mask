@@ -6,11 +6,20 @@
 
 static void TestComputeHoleBoundingBox();
 static void TestInterpolateHole();
+static void TestMaskedBlur();
+
+template <typename TImage>
+static void CreateImage(TImage* const image);
+
+static void CreateMask(Mask* const mask);
 
 int main( int argc, char ** argv )
 {
-  TestInterpolateHole();
+//  TestInterpolateHole();
   //TestComputeHoleBoundingBox();
+
+  TestMaskedBlur();
+
   return 0;
 }
 
@@ -61,4 +70,88 @@ void TestComputeHoleBoundingBox()
   itk::ImageRegion<2> boundingBox = MaskOperations::ComputeHoleBoundingBox(mask);
 
   std::cout << "Bounding box: " << boundingBox << std::endl;
+}
+
+
+template <typename TImage>
+void CreateImage(TImage* const image)
+{
+  typename TImage::IndexType corner;
+  corner.Fill(0);
+
+  typename TImage::SizeType size;
+  size.Fill(100);
+
+  typename TImage::RegionType region(corner, size);
+
+  image->SetRegions(region);
+  image->Allocate();
+
+  itk::ImageRegionIterator<TImage> imageIterator(image,region);
+
+  while(!imageIterator.IsAtEnd())
+  {
+//    if(imageIterator.GetIndex()[0] < 70)
+//    {
+//      imageIterator.Set(255);
+//    }
+//    else
+//    {
+//      imageIterator.Set(0);
+//    }
+
+    imageIterator.Set(rand() % 255);
+    ++imageIterator;
+  }
+
+}
+
+void CreateMask(Mask* const mask)
+{
+  typename Mask::IndexType corner;
+  corner.Fill(0);
+
+  typename Mask::SizeType size;
+  size.Fill(100);
+
+  typename Mask::RegionType region(corner, size);
+
+  mask->SetRegions(region);
+  mask->Allocate();
+
+  itk::ImageRegionIterator<Mask> maskIterator(mask, region);
+
+  while(!maskIterator.IsAtEnd())
+  {
+    if(maskIterator.GetIndex()[0] < 70)
+    {
+      maskIterator.Set(mask->GetValidValue());
+    }
+    else
+    {
+      maskIterator.Set(mask->GetHoleValue());
+    }
+
+    ++maskIterator;
+  }
+
+}
+
+void TestMaskedBlur()
+{
+  typedef itk::Image<unsigned char, 2> ImageType;
+  ImageType::Pointer image = ImageType::New();
+  CreateImage(image.GetPointer());
+  ITKHelpers::WriteImage(image.GetPointer(), "Image.png");
+
+  Mask::Pointer mask = Mask::New();
+  CreateMask(mask);
+  std::cout << "Mask hole value: " << static_cast<int>(mask->GetHoleValue()) << std::endl;
+  ITKHelpers::WriteImage(mask.GetPointer(), "Mask.png");
+
+  float blurVariance = 2.0f;
+  ImageType::Pointer output = ImageType::New();
+  MaskOperations::MaskedBlur(image.GetPointer(), mask, blurVariance, output.GetPointer());
+
+  ITKHelpers::WriteImage(output.GetPointer(), "Blurred.png");
 }
