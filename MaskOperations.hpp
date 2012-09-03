@@ -797,6 +797,13 @@ void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const fl
         }
       }
 
+      if(contributions.size() == 0)
+      {
+        std::stringstream ss;
+        ss << "Pixel " << centerPixel << " does not have any valid neighbors!";
+        throw std::runtime_error(ss.str());
+      }
+
       float totalWeight = 0.0f;
       for(unsigned int i = 0; i < contributions.size(); i++)
       {
@@ -804,7 +811,6 @@ void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const fl
       }
 
       // Determine the new pixel value
-//      typename TImage::PixelType newPixelValue = itk::NumericTraits<typename TImage::PixelType>::Zero;
       typedef typename TypeTraits<typename TImage::PixelType>::LargerType LargerType;
       LargerType newPixelValue = itk::NumericTraits<LargerType>::Zero;
 

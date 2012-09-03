@@ -94,6 +94,8 @@ itk::ImageRegion<2> GetRandomValidPatchInRegion(const Mask* const mask,
                                                 const unsigned int patchRadius);
 
 ////////////////// Templates ////////////////
+
+/** Blur the 'image' only where 'mask' is valid, and only using pixels where 'mask' is valid. */
 template <typename TImage>
 void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const float blurVariance,
                 TImage* const output);
