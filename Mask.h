@@ -164,11 +164,11 @@ public:
   /** Find the boundary of the Mask. The output image is black with boundary pixels of value
     * 'outputBoundaryPixelValue'. */
   typedef itk::Image<unsigned char, 2> BoundaryImageType;
-  void FindBoundary(BoundaryImageType* const boundary, const PixelTypeEnum& whichSideOfBoundary,
-                    const BoundaryImageType::PixelType& outputBoundaryPixelValue = 255) const;
-  void FindBoundaryInRegion(const itk::ImageRegion<2>& region, BoundaryImageType* const boundary,
-                            const PixelTypeEnum& whichSideOfBoundary,
-                            const BoundaryImageType::PixelType& outputBoundaryPixelValue = 255) const;
+  void CreateBoundaryImage(BoundaryImageType* const boundary, const PixelTypeEnum& whichSideOfBoundary,
+                           const BoundaryImageType::PixelType& outputBoundaryPixelValue = 255) const;
+  void CreateBoundaryImageInRegion(const itk::ImageRegion<2>& region, BoundaryImageType* const boundaryImage,
+                                   const PixelTypeEnum& whichSideOfBoundary,
+                                   const BoundaryImageType::PixelType& outputBoundaryPixelValue = 255) const;
 
   /** Recolor the hole pixels in 'image' a specified 'color'. 'color' cannot have a
     * default value (even itk::NumericTraits<T>::ZeroValue())
@@ -266,6 +266,13 @@ public:
 
   /** Count hole pixels in a region.*/
   unsigned int CountHolePixels(const itk::ImageRegion<2>& region) const;
+
+  /** Find hole pixels that are touching valid pixels.*/
+  std::vector<itk::Index<2> > FindBoundaryPixelsInRegion(const itk::ImageRegion<2>& region,
+                                                         const PixelTypeEnum& whichSideOfBoundary = VALID) const;
+
+  /** Find hole pixels that are touching valid pixels.*/
+  std::vector<itk::Index<2> > FindBoundaryPixels(const PixelTypeEnum& whichSideOfBoundary = VALID) const;
 
   /** Count hole pixels that are touching valid pixels.*/
   unsigned int CountBoundaryPixels(const itk::ImageRegion<2>& region) const;

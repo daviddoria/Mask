@@ -126,27 +126,42 @@ void Mask::ReadFromImage(const std::string& filename)
 
 unsigned int Mask::CountBoundaryPixels(const itk::ImageRegion<2>& region) const
 {
-  itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(this, region);
-  unsigned int numberOfBoundaryPixels = 0;
-  while(!maskIterator.IsAtEnd())
-    {
-    //if(this->IsHole(maskIterator.GetIndex()))
-    if(maskIterator.Get() == this->HoleValue)
-    {
-      if(this->HasValidNeighbor(maskIterator.GetIndex()))
-        {
-        numberOfBoundaryPixels++;
-        }
-    }
-
-    ++maskIterator;
-    }
-  return numberOfBoundaryPixels;
+  return FindBoundaryPixelsInRegion(region).size();
 }
 
 unsigned int Mask::CountBoundaryPixels() const
 {
   return CountBoundaryPixels(this->GetLargestPossibleRegion());
+}
+
+/** Find hole pixels that are touching valid pixels.*/
+std::vector<itk::Index<2> > Mask::FindBoundaryPixelsInRegion(const itk::ImageRegion<2>& region, const PixelTypeEnum& whichSideOfBoundary) const
+{
+  std::vector<itk::Index<2> > boundaryPixels;
+
+  itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(this, region);
+
+  while(!maskIterator.IsAtEnd())
+  {
+    //if(this->IsHole(maskIterator.GetIndex())) // This was assuming which side the boundary we wanted to find
+    if(maskIterator.Get() == whichSideOfBoundary)
+    {
+//      if(this->HasValidNeighbor(maskIterator.GetIndex())) // This was assuming we were visiting hole pixels
+      if(ITKHelpers::HasNeighborWithValueOtherThan(maskIterator.GetIndex(), this, whichSideOfBoundary))
+      {
+        boundaryPixels.push_back(maskIterator.GetIndex());
+      }
+    }
+
+    ++maskIterator;
+  }
+  return boundaryPixels;
+}
+
+/** Find hole pixels that are touching valid pixels.*/
+std::vector<itk::Index<2> > Mask::FindBoundaryPixels(const PixelTypeEnum& whichSideOfBoundary) const
+{
+  return FindBoundaryPixelsInRegion(this->GetLargestPossibleRegion(), whichSideOfBoundary);
 }
 
 unsigned int Mask::CountHolePixels(const itk::ImageRegion<2>& region) const
@@ -577,7 +592,7 @@ void Mask::CreateBinaryImage(UnsignedCharImageType* const image, const unsigned 
   CreateImage(image, holeColor, validColor, validColor);
 }
 
-void Mask::FindBoundaryInRegion(const itk::ImageRegion<2>& region, BoundaryImageType* const boundaryImage,
+void Mask::CreateBoundaryImageInRegion(const itk::ImageRegion<2>& region, BoundaryImageType* const boundaryImage,
                                 const PixelTypeEnum& whichSideOfBoundary,
                                 const BoundaryImageType::PixelType& outputBoundaryPixelValue) const
 {
@@ -640,10 +655,10 @@ void Mask::FindBoundaryInRegion(const itk::ImageRegion<2>& region, BoundaryImage
 
 }
 
-void Mask::FindBoundary(itk::Image<unsigned char, 2>* const boundaryImage, const PixelTypeEnum& whichSideOfBoundary,
+void Mask::CreateBoundaryImage(itk::Image<unsigned char, 2>* const boundaryImage, const PixelTypeEnum& whichSideOfBoundary,
                         const BoundaryImageType::PixelType& outputBoundaryPixelValue) const
 {
-  FindBoundaryInRegion(this->GetLargestPossibleRegion(), boundaryImage,
+  CreateBoundaryImageInRegion(this->GetLargestPossibleRegion(), boundaryImage,
                        whichSideOfBoundary, outputBoundaryPixelValue);
 }
 
