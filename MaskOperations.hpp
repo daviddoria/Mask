@@ -228,8 +228,10 @@ void InterpolateHole(TImage* const image, const Mask* const mask)
     }
   };
 
+  // Compute the bounding box of the hole
   itk::ImageRegion<2> boundingBox = MaskOperations::ComputeHoleBoundingBox(mask);
 
+  // Compute the distance function in the bounding box
   typedef itk::SignedDanielssonDistanceMapImageFilter<TImage, ITKHelpersTypes::FloatScalarImageType>
           SignedDanielssonDistanceMapImageFilterType;
   typename SignedDanielssonDistanceMapImageFilterType::Pointer distanceMapFilter =
@@ -239,8 +241,9 @@ void InterpolateHole(TImage* const image, const Mask* const mask)
   distanceMapFilter->GetOutput()->SetRequestedRegion(boundingBox);
   distanceMapFilter->Update();
 
-  // the first element will be the one with the smallest value
-  std::priority_queue <WeightedPixel, std::vector<WeightedPixel> > queue;
+  // We want to process pixels with the smallest distance first (closer to the boundary)
+  std::priority_queue<WeightedPixel> queue;
+  std::vector<float> weights;
   
   itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(mask, mask->GetLargestPossibleRegion());
 
@@ -251,18 +254,28 @@ void InterpolateHole(TImage* const image, const Mask* const mask)
       WeightedPixel weightedPixel(maskIterator.GetIndex(),
                                   distanceMapFilter->GetOutput()->GetPixel(maskIterator.GetIndex()));
       queue.push(weightedPixel);
+      weights.push_back(weightedPixel.Weight);
       }
 
     ++maskIterator;
     }
 
-  // TODO: Do "Inverse Distance Weighting Interpolation" here
+  // Here we need to find the distance from each hole pixel to *every* boundary pixel. Not sure that we need the
+  // distance map computed above, as that is just the distance to the *closest* boundary pixel.
+
+//  // Find the sum of the weights
+//  float weightSum = Helpers::Sum(weights);
+
+//  // "Inverse Distance Weighting Interpolation"
   
-  while (!queue.empty())
-  {
-    WeightedPixel p = queue.top();   //print out the highest priority element
-    queue.pop();                   //remove the highest priority element
-  }
+//  while (!queue.empty())
+//  {
+//    WeightedPixel p = queue.top();   //print out the highest priority element
+
+//    image->SetPixel(p.Pixel, value);
+
+//    queue.pop(); // remove the highest priority element
+//  }
 }
 
 template<typename TImage>
