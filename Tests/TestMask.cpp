@@ -47,13 +47,13 @@ void TestFindBoundaryInRegion()
 
     {
     Mask::BoundaryImageType::Pointer boundaryImage = Mask::BoundaryImageType::New();
-    mask->FindBoundaryInRegion(queryRegion, boundaryImage, Mask::VALID, 255);
+    mask->CreateBoundaryImageInRegion(queryRegion, boundaryImage, Mask::VALID, 255);
     ITKHelpers::WriteImage(boundaryImage.GetPointer(), "boundary_A_valid.png");
     }
 
     {
     Mask::BoundaryImageType::Pointer boundaryImage = Mask::BoundaryImageType::New();
-    mask->FindBoundaryInRegion(queryRegion, boundaryImage, Mask::HOLE, 255);
+    mask->CreateBoundaryImageInRegion(queryRegion, boundaryImage, Mask::HOLE, 255);
     ITKHelpers::WriteImage(boundaryImage.GetPointer(), "boundary_A_hole.png");
     }
   }
@@ -92,13 +92,13 @@ void TestFindBoundaryInRegion()
 
     {
     Mask::BoundaryImageType::Pointer boundaryImage = Mask::BoundaryImageType::New();
-    mask->FindBoundaryInRegion(queryRegion, boundaryImage, Mask::VALID, 255);
+    mask->CreateBoundaryImageInRegion(queryRegion, boundaryImage, Mask::VALID, 255);
     ITKHelpers::WriteImage(boundaryImage.GetPointer(), "boundary_B_valid.png");
     }
 
     {
     Mask::BoundaryImageType::Pointer boundaryImage = Mask::BoundaryImageType::New();
-    mask->FindBoundaryInRegion(queryRegion, boundaryImage, Mask::HOLE, 255);
+    mask->CreateBoundaryImageInRegion(queryRegion, boundaryImage, Mask::HOLE, 255);
     ITKHelpers::WriteImage(boundaryImage.GetPointer(), "boundary_B_hole.png");
     }
   }

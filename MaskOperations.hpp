@@ -113,48 +113,54 @@ void CreatePatchImage(const TImage* const image, const itk::ImageRegion<2>& sour
 }
 
 template<typename TImage>
-itk::Index<2> FindHighestValueInMaskedRegion(const TImage* const image, float& maxValue, const Mask* const maskImage)
+void FindMaximumValueInMaskedRegion(const TImage* const image, const Mask* const mask,
+                                    const itk::ImageRegion<2>& region, const Mask::PixelType maskValue,
+                                    typename TImage::PixelType& maxValue)
 {
-  //EnterFunction("FindHighestValueOnBoundary()");
-  // Return the location of the highest pixel in 'image' out of the non-zero pixels
-  // in 'boundaryImage'. Return the value of that pixel by reference.
+  // Return the location of the highest pixel in 'image' out of the pixels with 'maskValue' in the 'mask'.
+  // Return the value of that pixel by reference.
 
-  // Explicity find the maximum on the boundary
-  maxValue = 0.0f; // priorities are non-negative, so anything better than 0 will win
+  std::vector<itk::Index<2> > maskedPixelLocations = ITKHelpers::GetPixelsWithValueInRegion(mask, region, maskValue);
 
-  std::vector<itk::Index<2> > boundaryPixels = ITKHelpers::GetNonZeroPixels(maskImage);
+  if(maskedPixelLocations.size() <= 0)
+  {
+    throw std::runtime_error("FindMaximumValueInMaskedRegion(): No boundary pixels!");
+  }
 
-  if(boundaryPixels.size() <= 0)
-    {
-    throw std::runtime_error("FindHighestValueOnBoundary(): No boundary pixels!");
-    }
+  std::vector<typename TImage::PixelType> maskedPixels = ITKHelpers::GetPixelValues(image, maskedPixelLocations);
 
-  itk::Index<2> locationOfMaxValue = boundaryPixels[0];
+  // Initialize
+  Helpers::MaxOfAllIndices(maskedPixels, maxValue);
+}
 
-  for(unsigned int i = 0; i < boundaryPixels.size(); ++i)
-    {
-    if(image->GetPixel(boundaryPixels[i]) > maxValue)
-      {
-      maxValue = image->GetPixel(boundaryPixels[i]);
-      locationOfMaxValue = boundaryPixels[i];
-      }
-    }
-  //DebugMessage<float>("Highest value: ", maxValue);
-  //LeaveFunction("FindHighestValueOnBoundary()");
-  return locationOfMaxValue;
+template<typename TImage>
+void FindMinimumValueInMaskedRegion(const TImage* const image, const Mask* const mask, const itk::ImageRegion<2>& region,
+                                    const Mask::PixelType maskValue, typename TImage::PixelType& minValue)
+{
+  // Return the location of the lowest pixel in 'image' out of the pixels with 'maskValue' in the 'mask'.
+  // Return the value of that pixel by reference.
+
+  std::vector<itk::Index<2> > maskedPixelLocations = ITKHelpers::GetPixelsWithValueInRegion(mask, region, maskValue);
+
+  if(maskedPixelLocations.size() <= 0)
+  {
+    throw std::runtime_error("FindMinimumValueInMaskedRegion(): No masked pixels!");
+  }
+
+  std::vector<typename TImage::PixelType> maskedPixels = ITKHelpers::GetPixelValues(image, maskedPixelLocations);
+
+  // Initialize
+  Helpers::MinOfAllIndices(maskedPixels, minValue);
 }
 
 template<typename TImage, typename TRegionIndicatorImage>
-itk::Index<2> FindHighestValueInNonZeroRegion(const TImage* const image, float& maxValue,
-                                              const TRegionIndicatorImage* const indicatorImage)
+itk::Index<2> FindHighestValueInNonZeroRegion(const TImage* const image, float& maxValue)
 {
   // Create a mask from the indicator image
   Mask::Pointer mask = Mask::New();
   mask->CreateFromImage(image, itk::NumericTraits<typename TRegionIndicatorImage::PixelType>::Zero);
   return FindHighestValueInMaskedRegion(image, maxValue, mask);
 }
-
-
 
 template<typename TImage>
 std::vector<typename TImage::PixelType> GetValidPixelsInRegion(const TImage* const image, const Mask* const mask,

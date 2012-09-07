@@ -132,14 +132,22 @@ template<typename TImage>
 void SetHolePixelsToConstant(TImage* const image, const typename TImage::PixelType& value,
                              const Mask* const maskImage);
 
-/** Return the highest value of the specified image out of the pixels under a specified 'maskImage'. */
+/** Return the highest value of the specified image out of the pixels under a specified 'maskImage'.
+  * The value is returned by reference, since the interal use of MinOfAllIndices requires this. */
 template<typename TImage>
-itk::Index<2> FindHighestValueInMaskedRegion(const TImage* const image, float& maxValue,
-                                             const Mask* const maskImage);
+void FindMaximumValueInMaskedRegion(const TImage* const image,
+                                    const Mask* const maskImage, const itk::ImageRegion<2>& region,
+                                    const Mask::PixelType maskValue, typename TImage::PixelType& maxValue);
 
+/** Return the lowest value of the specified image out of the pixels under a specified 'maskImage'.
+  * The value is returned by reference, since the interal use of MinOfAllIndices requires this. */
+template<typename TImage>
+void FindMinimumValueInMaskedRegion(const TImage* const image, const Mask* const maskImage, const itk::ImageRegion<2>& region,
+                                    const Mask::PixelType maskValue, typename TImage::PixelType& minValue);
+
+/** Find the highest value in the non-zero part of 'image' */
 template<typename TImage, typename TRegionIndicatorImage>
-itk::Index<2> FindHighestValueInNonZero(const TImage* const image, float& maxValue,
-                                        const TRegionIndicatorImage* const maskImage);
+itk::Index<2> FindHighestValueInNonZero(const TImage* const image, float& maxValue);
 
 /** Get the average value of the masked pixels. */
 template<typename TImage>

@@ -7,6 +7,8 @@
 static void TestComputeHoleBoundingBox();
 static void TestInterpolateHole();
 static void TestMaskedBlur();
+static void TestFindMinimumValueInMaskedRegion();
+static void TestFindMaximumValueInMaskedRegion();
 
 template <typename TImage>
 static void CreateImage(TImage* const image);
@@ -177,3 +179,107 @@ void TestMaskedBlur()
   ITKHelpers::WriteImage(output.GetPointer(), "VectorBlurred.png");
   }
 }
+
+void TestFindMaximumValueInMaskedRegion()
+{
+  // Scalar
+  {
+  typedef itk::Image<int, 2> ImageType;
+  ImageType::Pointer image = ImageType::New();
+  CreateImage(image.GetPointer());
+//  ITKHelpers::WriteImage(image.GetPointer(), "ScalarImage.png");
+
+  Mask::Pointer mask = Mask::New();
+  CreateMask(mask);
+  std::cout << "Mask hole value: " << static_cast<int>(mask->GetHoleValue()) << std::endl;
+//  ITKHelpers::WriteImage(mask.GetPointer(), "Mask.png");
+
+  itk::Index<2> regionCorner = {{0,0}};
+  itk::Size<2> regionSize = {{10,10}};
+  itk::ImageRegion<2> region(regionCorner, regionSize);
+
+  ImageType::PixelType maxValue;
+  MaskOperations::FindMaximumValueInMaskedRegion(image.GetPointer(), mask,
+                                                 region, mask->GetValidValue(),
+                                                 maxValue);
+
+  std::cout << "Scalar max: " << maxValue << std::endl;
+  }
+
+  // Vector
+  {
+  typedef itk::Image<itk::CovariantVector<unsigned char, 3>, 2> ImageType;
+  ImageType::Pointer image = ImageType::New();
+  CreateImage(image.GetPointer());
+//  ITKHelpers::WriteImage(image.GetPointer(), "VectorImage.png");
+
+  Mask::Pointer mask = Mask::New();
+  CreateMask(mask);
+  std::cout << "Mask hole value: " << static_cast<int>(mask->GetHoleValue()) << std::endl;
+//  ITKHelpers::WriteImage(mask.GetPointer(), "Mask.png");
+
+  itk::Index<2> regionCorner = {{0,0}};
+  itk::Size<2> regionSize = {{10,10}};
+  itk::ImageRegion<2> region(regionCorner, regionSize);
+
+  ImageType::PixelType maxValue;
+  MaskOperations::FindMaximumValueInMaskedRegion(image.GetPointer(), mask,
+                                                 region, mask->GetValidValue(),
+                                                 maxValue);
+
+  std::cout << "Vector max: " << maxValue << std::endl;
+  }
+
+}
+
+void TestFindMinimumValueInMaskedRegion()
+{
+  // Scalar
+  {
+  typedef itk::Image<int, 2> ImageType;
+  ImageType::Pointer image = ImageType::New();
+  CreateImage(image.GetPointer());
+//  ITKHelpers::WriteImage(image.GetPointer(), "ScalarImage.png");
+
+  Mask::Pointer mask = Mask::New();
+  CreateMask(mask);
+  std::cout << "Mask hole value: " << static_cast<int>(mask->GetHoleValue()) << std::endl;
+//  ITKHelpers::WriteImage(mask.GetPointer(), "Mask.png");
+
+  itk::Index<2> regionCorner = {{0,0}};
+  itk::Size<2> regionSize = {{10,10}};
+  itk::ImageRegion<2> region(regionCorner, regionSize);
+
+  ImageType::PixelType minValue;
+  MaskOperations::FindMinimumValueInMaskedRegion(image.GetPointer(), mask,
+                                                 region, mask->GetValidValue(),
+                                                 minValue);
+
+  std::cout << "Scalar min: " << minValue << std::endl;
+  }
+
+  // Vector
+  {
+  typedef itk::Image<itk::CovariantVector<unsigned char, 3>, 2> ImageType;
+  ImageType::Pointer image = ImageType::New();
+  CreateImage(image.GetPointer());
+//  ITKHelpers::WriteImage(image.GetPointer(), "VectorImage.png");
+
+  Mask::Pointer mask = Mask::New();
+  CreateMask(mask);
+  std::cout << "Mask hole value: " << static_cast<int>(mask->GetHoleValue()) << std::endl;
+//  ITKHelpers::WriteImage(mask.GetPointer(), "Mask.png");
+
+  itk::Index<2> regionCorner = {{0,0}};
+  itk::Size<2> regionSize = {{10,10}};
+  itk::ImageRegion<2> region(regionCorner, regionSize);
+
+  ImageType::PixelType minValue;
+  MaskOperations::FindMinimumValueInMaskedRegion(image.GetPointer(), mask,
+                                                 region, mask->GetValidValue(),
+                                                 minValue);
+
+  std::cout << "Vector min: " << minValue << std::endl;
+  }
+}
+
