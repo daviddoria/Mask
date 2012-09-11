@@ -44,42 +44,30 @@ void CopySelfPatchIntoHoleOfTargetRegion(TImage* const image, const Mask* const 
 }
 
 template <class TImage>
-void CopySourcePatchIntoHoleOfTargetRegion(const TImage* const sourceImage, TImage* const targetImage,
+void CopyRegionIntoHolePortionOfTargetRegion(const TImage* const sourceImage, TImage* const targetImage,
                                            const Mask* const mask,
-                                           const itk::ImageRegion<2>& sourceRegionInput,
-                                           const itk::ImageRegion<2>& destinationRegionInput)
+                                           itk::ImageRegion<2> sourceRegion,
+                                           itk::ImageRegion<2> destinationRegion)
 {
   itk::ImageRegion<2> fullImageRegion = sourceImage->GetLargestPossibleRegion();
 
-  // We pass the regions by const reference, so copy them here before they are mutated
-  itk::ImageRegion<2> sourceRegion = sourceRegionInput;
-  itk::ImageRegion<2> destinationRegion = destinationRegionInput;
-
-  // Move the source region to the desintation region
-  itk::Offset<2> offset = destinationRegion.GetIndex() - sourceRegion.GetIndex();
-  sourceRegion.SetIndex(sourceRegion.GetIndex() + offset);
-
-  // Make the destination be entirely inside the image
+  sourceRegion = ITKHelpers::CropRegionAtPosition(sourceRegion, fullImageRegion, destinationRegion);
   destinationRegion.Crop(fullImageRegion);
-  sourceRegion.Crop(fullImageRegion);
-
-  // Move the source region back
-  sourceRegion.SetIndex(sourceRegion.GetIndex() - offset);
 
   itk::ImageRegionConstIterator<TImage> sourceIterator(sourceImage, sourceRegion);
   itk::ImageRegionIterator<TImage> destinationIterator(targetImage, destinationRegion);
   itk::ImageRegionConstIterator<Mask> maskIterator(mask, destinationRegion);
 
   while(!sourceIterator.IsAtEnd())
+  {
+    if(maskIterator.Get() == mask->GetHoleValue()) // we are in the target region
     {
-    if(mask->IsHole(maskIterator.GetIndex())) // we are in the target region
-      {
       destinationIterator.Set(sourceIterator.Get());
-      }
+    }
     ++sourceIterator;
     ++maskIterator;
     ++destinationIterator;
-    }
+  }
 }
 
 template<typename TImage>

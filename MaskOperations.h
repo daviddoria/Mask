@@ -116,10 +116,9 @@ template <class TImage>
 void CopyInValidRegion(const TImage* const input, TImage* const output, const Mask* const mask);
 
 template <class TImage>
-void CopySourcePatchIntoHoleOfTargetRegion(const TImage* const sourceImage, TImage* const targetImage,
-                                           const Mask* const mask,
-                                           const itk::ImageRegion<2>& sourceRegionInput,
-                                           const itk::ImageRegion<2>& destinationRegionInput);
+void CopyRegionIntoHolePortionOfTargetRegion(const TImage* const sourceImage, TImage* const targetImage,
+                                             const Mask* const mask, itk::ImageRegion<2> sourceRegion,
+                                             itk::ImageRegion<2> destinationRegion);
 
 template<typename TImage>
 void CreatePatchImage(const TImage* const image, const itk::ImageRegion<2>& sourceRegion,
