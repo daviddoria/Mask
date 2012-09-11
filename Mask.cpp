@@ -124,18 +124,18 @@ void Mask::ReadFromImage(const std::string& filename)
   this->ValidValue = tempValidValue;
 }
 
-unsigned int Mask::CountBoundaryPixels(const itk::ImageRegion<2>& region) const
+unsigned int Mask::CountBoundaryPixels(const itk::ImageRegion<2>& region, const Mask::PixelType& whichSideOfBoundary) const
 {
-  return FindBoundaryPixelsInRegion(region).size();
+  return FindBoundaryPixelsInRegion(region, whichSideOfBoundary).size();
 }
 
-unsigned int Mask::CountBoundaryPixels() const
+unsigned int Mask::CountBoundaryPixels(const Mask::PixelType& whichSideOfBoundary) const
 {
-  return CountBoundaryPixels(this->GetLargestPossibleRegion());
+  return CountBoundaryPixels(this->GetLargestPossibleRegion(), whichSideOfBoundary);
 }
 
 /** Find hole pixels that are touching valid pixels.*/
-std::vector<itk::Index<2> > Mask::FindBoundaryPixelsInRegion(const itk::ImageRegion<2>& region, const PixelTypeEnum& whichSideOfBoundary) const
+std::vector<itk::Index<2> > Mask::FindBoundaryPixelsInRegion(const itk::ImageRegion<2>& region, const Mask::PixelType& whichSideOfBoundary) const
 {
   std::vector<itk::Index<2> > boundaryPixels;
 
@@ -159,7 +159,7 @@ std::vector<itk::Index<2> > Mask::FindBoundaryPixelsInRegion(const itk::ImageReg
 }
 
 /** Find hole pixels that are touching valid pixels.*/
-std::vector<itk::Index<2> > Mask::FindBoundaryPixels(const PixelTypeEnum& whichSideOfBoundary) const
+std::vector<itk::Index<2> > Mask::FindBoundaryPixels(const Mask::PixelType& whichSideOfBoundary) const
 {
   return FindBoundaryPixelsInRegion(this->GetLargestPossibleRegion(), whichSideOfBoundary);
 }

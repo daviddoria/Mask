@@ -269,16 +269,16 @@ public:
 
   /** Find hole pixels that are touching valid pixels.*/
   std::vector<itk::Index<2> > FindBoundaryPixelsInRegion(const itk::ImageRegion<2>& region,
-                                                         const PixelTypeEnum& whichSideOfBoundary = VALID) const;
+                                                         const Mask::PixelType& whichSideOfBoundary) const;
 
   /** Find hole pixels that are touching valid pixels.*/
-  std::vector<itk::Index<2> > FindBoundaryPixels(const PixelTypeEnum& whichSideOfBoundary = VALID) const;
+  std::vector<itk::Index<2> > FindBoundaryPixels(const Mask::PixelType& whichSideOfBoundary) const;
 
   /** Count hole pixels that are touching valid pixels.*/
-  unsigned int CountBoundaryPixels(const itk::ImageRegion<2>& region) const;
+  unsigned int CountBoundaryPixels(const itk::ImageRegion<2>& region, const Mask::PixelType& whichSideOfBoundary) const;
 
   /** Count hole pixels that are touching valid pixels.*/
-  unsigned int CountBoundaryPixels() const;
+  unsigned int CountBoundaryPixels(const Mask::PixelType& whichSideOfBoundary) const;
 
   /** Count hole pixels in the whole mask.*/
   unsigned int CountHolePixels() const;
