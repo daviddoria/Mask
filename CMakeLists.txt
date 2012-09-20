@@ -39,6 +39,7 @@ include_directories(${Mask_include_dirs})
 # Create the library
 add_library(Mask Mask.cpp MaskOperations.cpp)
 target_link_libraries(Mask ${Mask_libraries})
+set(Mask_libraries ${Mask_libraries} Mask)
 
 # Add non-compiled sources to the project
 add_custom_target(MaskSources SOURCES Mask.h MaskQt.h Mask.hpp MaskOperations.hpp)
