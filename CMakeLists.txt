@@ -14,9 +14,9 @@ set(Mask_include_dirs ${Mask_include_dirs} ${ITKHelpersIncludeDirs})
 get_property(ITKHelpersLibs GLOBAL PROPERTY ITKHelpersLibs)
 set(Mask_libraries ${Mask_libraries} ${ITKHelpersLibs})
 
-# This is needed for c++0x features used in Helpers.
+# Enable c++11
 if(UNIX)
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 endif(UNIX)
 
 # VTK
@@ -58,7 +58,13 @@ set_property(GLOBAL PROPERTY MaskIncludeDirs ${Mask_include_dirs})
 set_property(GLOBAL PROPERTY MaskLibs ${Mask_libraries})
 
 # Build the tests if requested
-SET(Mask_BuildTests OFF CACHE BOOL "Build Mask tests?")
+option(Mask_BuildTests "Build Mask tests?" OFF)
 if(Mask_BuildTests)
   add_subdirectory(Tests)
 endif(Mask_BuildTests)
+
+# Display where this code was used from (if it is used as a submodule, there may be multiple instances of this submodule in the project, only the first of which is used)
+option(Mask_ShowSubmoduleLocation "Show the path from which Mask was used?" OFF)
+if(Mask_ShowSubmoduleLocation)
+  message("Mask used from ${CMAKE_CURRENT_SOURCE_DIR}")
+endif(Mask_ShowSubmoduleLocation)
