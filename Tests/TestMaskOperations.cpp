@@ -15,12 +15,15 @@ static void CreateImage(TImage* const image);
 
 static void CreateMask(Mask* const mask);
 
-int main( int argc, char ** argv )
+int main(int, char**)
 {
-//  TestInterpolateHole();
-  //TestComputeHoleBoundingBox();
+  TestInterpolateHole();
+  TestComputeHoleBoundingBox();
 
   TestMaskedBlur();
+
+  TestFindMinimumValueInMaskedRegion();
+  TestFindMaximumValueInMaskedRegion();
 
   return 0;
 }
