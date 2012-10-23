@@ -15,12 +15,15 @@ static void CreateImage(TImage* const image);
 
 static void CreateMask(Mask* const mask);
 
-int main( int argc, char ** argv )
+int main(int, char**)
 {
-//  TestInterpolateHole();
-  //TestComputeHoleBoundingBox();
+  TestInterpolateHole();
+  TestComputeHoleBoundingBox();
 
   TestMaskedBlur();
+
+  TestFindMinimumValueInMaskedRegion();
+  TestFindMaximumValueInMaskedRegion();
 
   return 0;
 }
@@ -153,11 +156,17 @@ void TestMaskedBlur()
   std::cout << "Mask hole value: " << static_cast<int>(mask->GetHoleValue()) << std::endl;
   ITKHelpers::WriteImage(mask.GetPointer(), "Mask.png");
 
+  // Test with a normal variance
   float blurVariance = 2.0f;
-  ImageType::Pointer output = ImageType::New();
-  MaskOperations::MaskedBlur(image.GetPointer(), mask, blurVariance, output.GetPointer());
+  ImageType::Pointer output_2 = ImageType::New();
+  MaskOperations::MaskedBlur(image.GetPointer(), mask, blurVariance, output_2.GetPointer());
+  ITKHelpers::WriteImage(output_2.GetPointer(), "ScalarBlurred_2.png");
 
-  ITKHelpers::WriteImage(output.GetPointer(), "ScalarBlurred.png");
+  // Test with zero variance (i.e. don't blur the image)
+  blurVariance = 0.0f;
+  ImageType::Pointer output_0 = ImageType::New();
+  MaskOperations::MaskedBlur(image.GetPointer(), mask, blurVariance, output_0.GetPointer());
+  ITKHelpers::WriteImage(output_0.GetPointer(), "ScalarBlurred_0.png");
   }
 
   // Vector
