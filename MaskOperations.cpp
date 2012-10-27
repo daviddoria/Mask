@@ -21,8 +21,10 @@
 // STL
 #include <stdexcept>
 
+#if MaskUseVTK
 // VTK
 #include <vtkImageData.h>
+#endif
 
 namespace MaskOperations
 {
@@ -68,6 +70,7 @@ itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel,
   return nextPixelAlongVector;
 }
 
+#if MaskUseVTK
 void ITKImageToVTKImageMasked(const ITKHelpers::FloatVectorImageType* const image, const Mask* const mask,
                               vtkImageData* const outputImage, const unsigned char maskColor[3])
 {
@@ -121,6 +124,7 @@ void ITKImageToVTKImageMasked(const ITKHelpers::FloatVectorImageType* const imag
 
   outputImage->Modified();
 }
+#endif
 
 itk::ImageRegion<2> RandomRegionInsideHole(const Mask* const mask, const unsigned int halfWidth)
 {
@@ -164,6 +168,7 @@ itk::ImageRegion<2> ComputeHoleBoundingBox(const Mask* const mask)
   return ITKHelpers::ComputeBoundingBox(mask, mask->GetHoleValue());
 }
 
+#if MaskUseVTK
 void SetMaskTransparency(const Mask* const input, vtkImageData* outputImage)
 {
   assert(input);
@@ -209,6 +214,7 @@ void SetMaskTransparency(const Mask* const input, vtkImageData* outputImage)
 
   outputImage->Modified();
 }
+#endif
 
 std::vector<itk::ImageRegion<2> > GetAllFullyValidRegions(const Mask* const mask,
                                                           const itk::ImageRegion<2>& searchRegion,
