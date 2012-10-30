@@ -20,9 +20,9 @@ if(UNIX)
 endif(UNIX)
 
 # VTK
-FIND_PACKAGE(VTK REQUIRED)
-INCLUDE(${VTK_USE_FILE})
-set(Mask_libraries ${Mask_libraries} ${VTK_LIBRARIES})
+#FIND_PACKAGE(VTK REQUIRED)
+#INCLUDE(${VTK_USE_FILE})
+#set(Mask_libraries ${Mask_libraries} ${VTK_LIBRARIES})
 
 # ITK
 if(NOT ITK_FOUND)

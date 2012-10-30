@@ -29,8 +29,10 @@
 #include "itkIndex.h"
 #include "itkImageRegion.h"
 
+#if MaskUseVTK
 // VTK
 class vtkImageData;
+#endif
 
 namespace MaskOperations
 {
@@ -49,7 +51,9 @@ template<typename TImage>
 void WriteMaskedRegionPNG(const TImage* const image, const Mask* mask, itk::ImageRegion<2> region,
                           const std::string& filename, const typename TImage::PixelType& holeColor);
 
+#if MaskUseVTK
 void SetMaskTransparency(const Mask* const input, vtkImageData* outputImage);
+#endif
 
 /** Return a random region that is entirely inside the hole. */
 itk::ImageRegion<2> RandomRegionInsideHole(const Mask* const mask, const unsigned int halfWidth);
