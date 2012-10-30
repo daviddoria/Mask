@@ -49,9 +49,6 @@ template<typename TImage>
 void WriteMaskedRegionPNG(const TImage* const image, const Mask* mask, itk::ImageRegion<2> region,
                           const std::string& filename, const typename TImage::PixelType& holeColor);
 
-void ITKImageToVTKImageMasked(const ITKHelpers::FloatVectorImageType* const image, const Mask* const mask,
-                              vtkImageData* const outputImage, const unsigned char maskColor[3]);
-
 void SetMaskTransparency(const Mask* const input, vtkImageData* outputImage);
 
 /** Return a random region that is entirely inside the hole. */
@@ -94,6 +91,14 @@ itk::ImageRegion<2> GetRandomValidPatchInRegion(const Mask* const mask,
                                                 const unsigned int patchRadius);
 
 ////////////////// Templates ////////////////
+
+template <typename TImage>
+void ITKImageToVTKImageMasked(const ITKHelpers::FloatVectorImageType* const image, const Mask* const mask,
+                              vtkImageData* const outputImage, const unsigned char maskColor[3]);
+
+template <typename TPixel>
+void ITKImageToVTKImageMasked(const typename itk::VectorImage<TPixel, 2>* const image, const Mask* const mask,
+                              vtkImageData* const outputImage, const unsigned char maskColor[3]);
 
 /** Blur the 'image' only where 'mask' is valid, and only using pixels where 'mask' is valid. */
 template <typename TImage>

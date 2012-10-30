@@ -68,60 +68,6 @@ itk::Index<2> FindPixelAcrossHole(const itk::Index<2>& queryPixel,
   return nextPixelAlongVector;
 }
 
-void ITKImageToVTKImageMasked(const ITKHelpers::FloatVectorImageType* const image, const Mask* const mask,
-                              vtkImageData* const outputImage, const unsigned char maskColor[3])
-{
-  assert(mask);
-  // This function assumes an ND (with N>3) image has the first 3 channels as RGB and extra
-  // information in the remaining channels.
-
-  //std::cout << "ITKImagetoVTKRGBImage()" << std::endl;
-  if(image->GetNumberOfComponentsPerPixel() < 3)
-    {
-    std::cerr << "The input image has " << image->GetNumberOfComponentsPerPixel()
-              << " components, but at least 3 are required." << std::endl;
-    return;
-    }
-
-  // Setup and allocate the image data
-  //outputImage->SetNumberOfScalarComponents(3);
-  //outputImage->SetScalarTypeToUnsignedChar();
-  outputImage->SetDimensions(image->GetLargestPossibleRegion().GetSize()[0],
-                             image->GetLargestPossibleRegion().GetSize()[1],
-                             1);
-  //outputImage->AllocateScalars();
-  outputImage->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
-
-  // Copy all of the input image pixels to the output image
-  itk::ImageRegionConstIteratorWithIndex<ITKHelpers::FloatVectorImageType>
-         imageIterator(image,image->GetLargestPossibleRegion());
-  imageIterator.GoToBegin();
-
-  while(!imageIterator.IsAtEnd())
-    {
-    unsigned char* VTKPixel = static_cast<unsigned char*>(
-          outputImage->GetScalarPointer(imageIterator.GetIndex()[0], imageIterator.GetIndex()[1],0));
-    if(mask->IsValid(imageIterator.GetIndex()))
-      {
-      for(unsigned int component = 0; component < 3; component++)
-        {
-        VTKPixel[component] = static_cast<unsigned char>(imageIterator.Get()[component]);
-        }
-      }
-    else
-      {
-      for(unsigned int component = 0; component < 3; component++)
-        {
-        VTKPixel[component] = maskColor[component];
-        }
-      }
-
-    ++imageIterator;
-    }
-
-  outputImage->Modified();
-}
-
 itk::ImageRegion<2> RandomRegionInsideHole(const Mask* const mask, const unsigned int halfWidth)
 {
   assert(mask);
