@@ -20,9 +20,12 @@ if(UNIX)
 endif(UNIX)
 
 # VTK
-#FIND_PACKAGE(VTK REQUIRED)
-#INCLUDE(${VTK_USE_FILE})
-#set(Mask_libraries ${Mask_libraries} ${VTK_LIBRARIES})
+FIND_PACKAGE(VTK)
+if(VTK_FOUND)
+  INCLUDE(${VTK_USE_FILE})
+  set(Mask_libraries ${Mask_libraries} ${VTK_LIBRARIES})
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMASK_USE_VTK")
+endif()
 
 # ITK
 if(NOT ITK_FOUND)
