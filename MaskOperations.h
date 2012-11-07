@@ -114,6 +114,11 @@ template <typename TImage>
 void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const float blurVariance,
                 TImage* const output);
 
+/** Blur the 'image' only where 'mask' is valid, and only using pixels where 'mask' is valid. */
+template <typename TImage>
+void MaskedBlurInRegion(const TImage* const inputImage, const Mask* const mask, const itk::ImageRegion<2>& region,
+                        const float blurVariance, TImage* const output);
+
 template <class TImage>
 void CopySelfPatchIntoHoleOfTargetRegion(TImage* const image, const Mask* const mask,
                                          const itk::ImageRegion<2>& sourceRegionInput,

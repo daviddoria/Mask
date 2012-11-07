@@ -170,21 +170,21 @@ void Mask::CreateFromImage(const TImage* image, const typename TImage::PixelType
   //std::cout << "Hole value: " << holeValue << std::endl;
   unsigned int counter = 0;
   while(!imageIterator.IsAtEnd())
-    {
+  {
     typename TImage::PixelType currentPixel = imageIterator.Get();
     //std::cout << "Current value: " << currentPixel << std::endl;
     if(currentPixel == holeValue)
-      {
+    {
       this->SetPixel(imageIterator.GetIndex(), this->HoleValue);
       counter++;
-      }
+    }
     else
-      {
+    {
       this->SetPixel(imageIterator.GetIndex(), this->ValidValue);
-      }
+    }
 
     ++imageIterator;
-    }
+  }
   std::cout << "Mask::CreateFromImage: There were " << counter << " mask pixels." << std::endl;
 }
 
