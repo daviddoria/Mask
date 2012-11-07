@@ -737,6 +737,10 @@ template <typename TImage>
 void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const float blurVariance,
                 TImage* const output)
 {
+  std::cout << "image region: " << inputImage->GetLargestPossibleRegion()
+            << " mask region: " << mask->GetLargestPossibleRegion() << std::endl;
+  assert(inputImage->GetLargestPossibleRegion() == mask->GetLargestPossibleRegion());
+
   // Create a Gaussian kernel
   typedef itk::GaussianOperator<float, 1> GaussianOperatorType;
 
