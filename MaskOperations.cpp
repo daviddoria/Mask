@@ -21,7 +21,7 @@
 // STL
 #include <stdexcept>
 
-#if MaskUseVTK
+#ifdef MaskUseVTK
 // VTK
 #include <vtkImageData.h>
 #endif
@@ -113,7 +113,7 @@ itk::ImageRegion<2> ComputeHoleBoundingBox(const Mask* const mask)
   return ITKHelpers::ComputeBoundingBox(mask, mask->GetHoleValue());
 }
 
-#if MaskUseVTK
+#ifdef MaskUseVTK
 void SetMaskTransparency(const Mask* const input, vtkImageData* outputImage)
 {
   assert(input);

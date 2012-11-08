@@ -33,7 +33,7 @@
 #include "itkSignedDanielssonDistanceMapImageFilter.h"
 
 // VTK
-#if MaskUseVTK
+#ifdef MaskUseVTK
   #include <vtkImageData.h>
 #endif
 
@@ -932,7 +932,7 @@ void SetHolePixelsToConstant(TImage* const image, const typename TImage::PixelTy
   }
 }
 
-#if MaskUseVTK
+#ifdef MaskUseVTK
 	template <typename TImage>
 	void ITKImageToVTKImageMasked(const TImage* const image, const Mask* const mask,
 								  vtkImageData* const outputImage, const unsigned char maskColor[3])

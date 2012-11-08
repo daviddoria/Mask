@@ -29,7 +29,7 @@
 #include "itkIndex.h"
 #include "itkImageRegion.h"
 
-#if MaskUseVTK
+#ifdef MaskUseVTK
 // VTK
 class vtkImageData;
 #endif
@@ -38,7 +38,7 @@ namespace MaskOperations
 {
 
 // Functions with VTK
-#if MaskUseVTK
+#ifdef MaskUseVTK
 void SetMaskTransparency(const Mask* const input, vtkImageData* outputImage);
 #endif
 
@@ -83,7 +83,7 @@ itk::ImageRegion<2> GetRandomValidPatchInRegion(const Mask* const mask,
                                                 const unsigned int patchRadius);
 
 ////////////////// Templates with VTK ////////////////
-#if MaskUseVTK
+#ifdef MaskUseVTK
 template <typename TImage>
 void ITKImageToVTKImageMasked(const ITKHelpers::FloatVectorImageType* const image, const Mask* const mask,
                               vtkImageData* const outputImage, const unsigned char maskColor[3]);
