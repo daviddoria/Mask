@@ -20,11 +20,14 @@ if(UNIX)
 endif(UNIX)
 
 # VTK
-FIND_PACKAGE(VTK)
-if(VTK_FOUND)
-  INCLUDE(${VTK_USE_FILE})
-  set(Mask_libraries ${Mask_libraries} ${VTK_LIBRARIES})
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMASK_USE_VTK")
+option(MaskUseVTK "Enable VTK functions in MaskOperations?" OFF)
+if(MaskUseVTK)
+  FIND_PACKAGE(VTK)
+  if(VTK_FOUND)
+    INCLUDE(${VTK_USE_FILE})
+    set(Mask_libraries ${Mask_libraries} ${VTK_LIBRARIES})
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMASK_USE_VTK")
+  endif()
 endif()
 
 # ITK
@@ -33,6 +36,10 @@ if(NOT ITK_FOUND)
                             ITKImageIntensity ITKImageFeature ITKMathematicalMorphology
                             ITKBinaryMathematicalMorphology ITKDistanceMap)
   INCLUDE(${ITK_USE_FILE})
+
+  if( "${ITK_VERSION_MAJOR}" LESS 4 )
+    MESSAGE(FATAL_ERROR "You must build ImageGraphCutSegmentation with ITK >= 4.0!")
+  endif( "${ITK_VERSION_MAJOR}" LESS 4 )
 endif()
 set(Mask_libraries ${Mask_libraries} ${ITK_LIBRARIES})
 
