@@ -21,11 +21,13 @@ endif(UNIX)
 
 # VTK
 option(MaskUseVTK "Enable VTK functions in MaskOperations?" OFF)
-FIND_PACKAGE(VTK)
-if(VTK_FOUND AND MaskUseVTK)
-  INCLUDE(${VTK_USE_FILE})
-  set(Mask_libraries ${Mask_libraries} ${VTK_LIBRARIES})
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMASK_USE_VTK")
+if(MaskUseVTK)
+  FIND_PACKAGE(VTK)
+  if(VTK_FOUND)
+    INCLUDE(${VTK_USE_FILE})
+    set(Mask_libraries ${Mask_libraries} ${VTK_LIBRARIES})
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMASK_USE_VTK")
+  endif()
 endif()
 
 # ITK
