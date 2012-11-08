@@ -33,7 +33,9 @@
 #include "itkSignedDanielssonDistanceMapImageFilter.h"
 
 // VTK
-#include <vtkImageData.h>
+#if MaskUseVTK
+  #include <vtkImageData.h>
+#endif
 
 namespace MaskOperations
 {
@@ -930,116 +932,118 @@ void SetHolePixelsToConstant(TImage* const image, const typename TImage::PixelTy
   }
 }
 
-template <typename TImage>
-void ITKImageToVTKImageMasked(const TImage* const image, const Mask* const mask,
-                              vtkImageData* const outputImage, const unsigned char maskColor[3])
-{
-  assert(mask);
-  // This function assumes an ND (with N>3) image has the first 3 channels as RGB and extra
-  // information in the remaining channels.
+#if MaskUseVTK
+	template <typename TImage>
+	void ITKImageToVTKImageMasked(const TImage* const image, const Mask* const mask,
+								  vtkImageData* const outputImage, const unsigned char maskColor[3])
+	{
+	  assert(mask);
+	  // This function assumes an ND (with N>3) image has the first 3 channels as RGB and extra
+	  // information in the remaining channels.
 
-  //std::cout << "ITKImagetoVTKRGBImage()" << std::endl;
-  if(image->GetNumberOfComponentsPerPixel() < 3)
-  {
-    std::cerr << "The input image has " << image->GetNumberOfComponentsPerPixel()
-              << " components, but at least 3 are required." << std::endl;
-    return;
-  }
+	  //std::cout << "ITKImagetoVTKRGBImage()" << std::endl;
+	  if(image->GetNumberOfComponentsPerPixel() < 3)
+	  {
+		std::cerr << "The input image has " << image->GetNumberOfComponentsPerPixel()
+				  << " components, but at least 3 are required." << std::endl;
+		return;
+	  }
 
-  // Setup and allocate the image data
-  //outputImage->SetNumberOfScalarComponents(3);
-  //outputImage->SetScalarTypeToUnsignedChar();
-  outputImage->SetDimensions(image->GetLargestPossibleRegion().GetSize()[0],
-                             image->GetLargestPossibleRegion().GetSize()[1],
-                             1);
-  //outputImage->AllocateScalars();
-  outputImage->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
+	  // Setup and allocate the image data
+	  //outputImage->SetNumberOfScalarComponents(3);
+	  //outputImage->SetScalarTypeToUnsignedChar();
+	  outputImage->SetDimensions(image->GetLargestPossibleRegion().GetSize()[0],
+								 image->GetLargestPossibleRegion().GetSize()[1],
+								 1);
+	  //outputImage->AllocateScalars();
+	  outputImage->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
 
-  // Copy all of the input image pixels to the output image
-  itk::ImageRegionConstIteratorWithIndex<TImage>
-         imageIterator(image,image->GetLargestPossibleRegion());
-  imageIterator.GoToBegin();
+	  // Copy all of the input image pixels to the output image
+	  itk::ImageRegionConstIteratorWithIndex<TImage>
+			 imageIterator(image,image->GetLargestPossibleRegion());
+	  imageIterator.GoToBegin();
 
-  while(!imageIterator.IsAtEnd())
-  {
-    unsigned char* VTKPixel = static_cast<unsigned char*>(
-          outputImage->GetScalarPointer(imageIterator.GetIndex()[0], imageIterator.GetIndex()[1],0));
-    if(mask->IsValid(imageIterator.GetIndex()))
-    {
-      for(unsigned int component = 0; component < 3; component++)
-      {
-        VTKPixel[component] = static_cast<unsigned char>(imageIterator.Get()[component]);
-      }
-    }
-    else
-    {
-      for(unsigned int component = 0; component < 3; component++)
-      {
-        VTKPixel[component] = maskColor[component];
-      }
-    }
+	  while(!imageIterator.IsAtEnd())
+	  {
+		unsigned char* VTKPixel = static_cast<unsigned char*>(
+			  outputImage->GetScalarPointer(imageIterator.GetIndex()[0], imageIterator.GetIndex()[1],0));
+		if(mask->IsValid(imageIterator.GetIndex()))
+		{
+		  for(unsigned int component = 0; component < 3; component++)
+		  {
+			VTKPixel[component] = static_cast<unsigned char>(imageIterator.Get()[component]);
+		  }
+		}
+		else
+		{
+		  for(unsigned int component = 0; component < 3; component++)
+		  {
+			VTKPixel[component] = maskColor[component];
+		  }
+		}
 
-    ++imageIterator;
-  }
+		++imageIterator;
+	  }
 
-  outputImage->Modified();
-}
+	  outputImage->Modified();
+	}
 
-template <typename TPixel>
-void ITKImageToVTKImageMasked(const typename itk::VectorImage<TPixel, 2>* const image, const Mask* const mask,
-                              vtkImageData* const outputImage, const unsigned char maskColor[3])
-{
-  assert(mask);
+	template <typename TPixel>
+	void ITKImageToVTKImageMasked(const typename itk::VectorImage<TPixel, 2>* const image, const Mask* const mask,
+								  vtkImageData* const outputImage, const unsigned char maskColor[3])
+	{
+	  assert(mask);
 
-  typedef typename itk::VectorImage<TPixel, 2> VectorImageType;
-  // This function assumes an ND (with N>3) image has the first 3 channels as RGB and extra
-  // information in the remaining channels.
+	  typedef typename itk::VectorImage<TPixel, 2> VectorImageType;
+	  // This function assumes an ND (with N>3) image has the first 3 channels as RGB and extra
+	  // information in the remaining channels.
 
-  //std::cout << "ITKImagetoVTKRGBImage()" << std::endl;
-  if(image->GetNumberOfComponentsPerPixel() < 3)
-  {
-    std::cerr << "The input image has " << image->GetNumberOfComponentsPerPixel()
-              << " components, but at least 3 are required." << std::endl;
-    return;
-  }
+	  //std::cout << "ITKImagetoVTKRGBImage()" << std::endl;
+	  if(image->GetNumberOfComponentsPerPixel() < 3)
+	  {
+		std::cerr << "The input image has " << image->GetNumberOfComponentsPerPixel()
+				  << " components, but at least 3 are required." << std::endl;
+		return;
+	  }
 
-  // Setup and allocate the image data
-  //outputImage->SetNumberOfScalarComponents(3);
-  //outputImage->SetScalarTypeToUnsignedChar();
-  outputImage->SetDimensions(image->GetLargestPossibleRegion().GetSize()[0],
-                             image->GetLargestPossibleRegion().GetSize()[1],
-                             1);
-  //outputImage->AllocateScalars();
-  outputImage->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
+	  // Setup and allocate the image data
+	  //outputImage->SetNumberOfScalarComponents(3);
+	  //outputImage->SetScalarTypeToUnsignedChar();
+	  outputImage->SetDimensions(image->GetLargestPossibleRegion().GetSize()[0],
+								 image->GetLargestPossibleRegion().GetSize()[1],
+								 1);
+	  //outputImage->AllocateScalars();
+	  outputImage->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
 
-  // Copy all of the input image pixels to the output image
-  itk::ImageRegionConstIteratorWithIndex<VectorImageType>
-         imageIterator(image,image->GetLargestPossibleRegion());
-  imageIterator.GoToBegin();
+	  // Copy all of the input image pixels to the output image
+	  itk::ImageRegionConstIteratorWithIndex<VectorImageType>
+			 imageIterator(image,image->GetLargestPossibleRegion());
+	  imageIterator.GoToBegin();
 
-  while(!imageIterator.IsAtEnd())
-  {
-    unsigned char* VTKPixel = static_cast<unsigned char*>(
-          outputImage->GetScalarPointer(imageIterator.GetIndex()[0], imageIterator.GetIndex()[1],0));
-    if(mask->IsValid(imageIterator.GetIndex()))
-    {
-      for(unsigned int component = 0; component < 3; component++)
-      {
-        VTKPixel[component] = static_cast<unsigned char>(imageIterator.Get()[component]);
-      }
-    }
-    else
-    {
-      for(unsigned int component = 0; component < 3; component++)
-      {
-        VTKPixel[component] = maskColor[component];
-      }
-    }
+	  while(!imageIterator.IsAtEnd())
+	  {
+		unsigned char* VTKPixel = static_cast<unsigned char*>(
+			  outputImage->GetScalarPointer(imageIterator.GetIndex()[0], imageIterator.GetIndex()[1],0));
+		if(mask->IsValid(imageIterator.GetIndex()))
+		{
+		  for(unsigned int component = 0; component < 3; component++)
+		  {
+			VTKPixel[component] = static_cast<unsigned char>(imageIterator.Get()[component]);
+		  }
+		}
+		else
+		{
+		  for(unsigned int component = 0; component < 3; component++)
+		  {
+			VTKPixel[component] = maskColor[component];
+		  }
+		}
 
-    ++imageIterator;
-  }
+		++imageIterator;
+	  }
 
-  outputImage->Modified();
-}
+	  outputImage->Modified();
+	}
+#endif // #if MaskUseVTK
 
 } // end namespace
