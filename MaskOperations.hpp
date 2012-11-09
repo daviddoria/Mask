@@ -744,13 +744,21 @@ void MaskedBlur(const TImage* const inputImage, const Mask* const mask, const fl
 
 /** Blur the 'image' only where 'mask' is valid, and only using pixels where 'mask' is valid. */
 template <typename TImage>
-void MaskedBlurInRegion(const TImage* const inputImage, const Mask* const mask, const itk::ImageRegion<2>& region,
+void MaskedBlurInRegion(const TImage* const inputImage, const Mask* const mask,
+                        const itk::ImageRegion<2>& region,
                         const float blurVariance, TImage* const output)
 
 {
+  std::cout << "MaskedBlurInRegion()" << region << std::endl;
 //  std::cout << "image region: " << inputImage->GetLargestPossibleRegion()
 //            << " mask region: " << mask->GetLargestPossibleRegion() << std::endl;
   assert(inputImage->GetLargestPossibleRegion() == mask->GetLargestPossibleRegion());
+  assert(mask->GetLargestPossibleRegion().IsInside(region));
+
+  if(!mask->GetLargestPossibleRegion().IsInside(region))
+  {
+    std::cout << "MaskedBlurInRegion: region is not inside image!" << region << std::endl;
+  }
 
   // Create a Gaussian kernel
   typedef itk::GaussianOperator<float, 1> GaussianOperatorType;
@@ -776,9 +784,11 @@ void MaskedBlurInRegion(const TImage* const inputImage, const Mask* const mask, 
 //   }
 
   // Create the output image - data will be deep copied into it
+  std::cout << "MaskedBlurInRegion: creating blurredImage" << std::endl;
+  std::cout << "MaskedBlurInRegion: inputImage region " << inputImage->GetLargestPossibleRegion() << std::endl;
   typename TImage::Pointer blurredImage = TImage::New();
   ITKHelpers::InitializeImage(blurredImage.GetPointer(), inputImage->GetLargestPossibleRegion());
-
+  std::cout << "MaskedBlurInRegion: after init" << std::endl;
   // We apply the filter to the same image, one dimension at a time. To do this,
   // instead of applying it to the 'input' the first pass, then needing to copy
   // the output to the input before running the next pass, we instead create
@@ -786,12 +796,14 @@ void MaskedBlurInRegion(const TImage* const inputImage, const Mask* const mask, 
   typename TImage::Pointer operatingImage = TImage::New();
   operatingImage->SetRegions(region);
   operatingImage->Allocate();
+  std::cout << "MaskedBlurInRegion: deep copy" << std::endl;
   ITKHelpers::DeepCopyInRegion(inputImage, region, operatingImage.GetPointer());
-
+  std::cout << "MaskedBlurInRegion: after deep copy" << std::endl;
   for(unsigned int dimensionPass = 0; dimensionPass < 2; dimensionPass++) // The image is 2D
   {
+    std::cout << "MaskedBlurInRegion: inner iter" << std::endl;
     itk::ImageRegionIterator<TImage> imageIterator(operatingImage, region);
-
+    std::cout << "MaskedBlurInRegion: after inner iter" << std::endl;
     while(!imageIterator.IsAtEnd())
     {
       itk::Index<2> centerPixel = imageIterator.GetIndex();
@@ -854,11 +866,15 @@ void MaskedBlurInRegion(const TImage* const inputImage, const Mask* const mask, 
 
     // For the separable Gaussian filtering concept to work,
     // the next pass must operate on the output of the current pass.
+    std::cout << "MaskedBlurInRegion: copying into operating image" << std::endl;
     ITKHelpers::DeepCopy(blurredImage.GetPointer(), operatingImage.GetPointer());
+    std::cout << "MaskedBlurInRegion: after copying into operating image" << std::endl;
   }
 
   // Copy the final image to the output.
+  std::cout << "MaskedBlurInRegion: copying into output" << std::endl;
   ITKHelpers::DeepCopy(blurredImage.GetPointer(), output);
+  std::cout << "MaskedBlurInRegion: after copying into output" << std::endl;
 }
 
 
