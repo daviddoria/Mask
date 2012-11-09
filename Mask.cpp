@@ -44,7 +44,8 @@ void Mask::Read(const std::string& filename)
   if(extension != "mask")
   {
     std::stringstream ss;
-    ss << "Cannot read any file except .mask! Specified file was ." << extension;
+    ss << "Cannot read any file except .mask! Specified file was ." << extension
+       << " You might want ReadFromImage instead.";
     throw std::runtime_error(ss.str());
   }
 

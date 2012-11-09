@@ -329,10 +329,11 @@ private:
 
   /** Pixels with this value indicate a hole. */
   unsigned char HoleValue;
+//  unsigned char HoleValue = 255; // Can't do this if we want to support c++03
 
   /** Pixels with this value are valid. */
   unsigned char ValidValue;
-
+//  unsigned char ValidValue = 0; // Can't do this if we want to support c++03
 };
 
 #include "Mask.hpp"
