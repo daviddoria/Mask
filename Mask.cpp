@@ -53,9 +53,9 @@ void Mask::Read(const std::string& filename)
   std::ifstream fin(filename.c_str());
 
   if(!fin )
-    {
+  {
     throw std::runtime_error("File not found!");
-    }
+  }
 
   std::string line;
   std::stringstream linestream;
@@ -81,8 +81,8 @@ void Mask::Read(const std::string& filename)
 
   std::string path = Helpers::GetPath(filename);
 
-  std::cout << "Reading mask: HoleValue " << static_cast<int>(this->HoleValue)
-            << " ValidValue: " << static_cast<int>(this->ValidValue) << std::endl;
+//  std::cout << "Reading mask: HoleValue " << static_cast<int>(this->HoleValue)
+//            << " ValidValue: " << static_cast<int>(this->ValidValue) << std::endl;
 
   std::string fullImageFileName = path + imageFileName;
 
