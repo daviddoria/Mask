@@ -155,7 +155,7 @@ public:
   template <typename TImage>
   void CopyHolesFromValue(const TImage* const inputImage, const unsigned int value);
 
-  enum PixelTypeEnum {HOLE, VALID};
+  enum class PixelTypeEnum {HOLE, VALID};
 
   /** Create valid pixels from specified pixels in an image.*/
   template <typename TImage>

@@ -620,13 +620,13 @@ void Mask::CreateBoundaryImageInRegion(const itk::ImageRegion<2>& region, Bounda
 
   unsigned char foregroundValue;
   unsigned char backgroundValue;
-  if(whichSideOfBoundary == VALID)
+  if(whichSideOfBoundary == PixelTypeEnum::VALID)
   {
     // we want the boundary pixels to be in the valid region.
     foregroundValue = this->GetValidValue();
     backgroundValue = this->GetHoleValue();
   }
-  else if(whichSideOfBoundary == HOLE)
+  else if(whichSideOfBoundary == PixelTypeEnum::HOLE)
   {
     // we want the boundary pixels to be in the hole region.
     foregroundValue = this->GetHoleValue();
@@ -644,12 +644,12 @@ void Mask::CreateBoundaryImageInRegion(const itk::ImageRegion<2>& region, Bounda
   binaryContourFilter->GetOutput()->CopyInformationFrom(this);
 
 
-  if(whichSideOfBoundary == VALID)
+  if(whichSideOfBoundary == PixelTypeEnum::VALID)
   {
     // CreateBinaryImage(holeColor, validColor)
     binaryContourFilter->GetOutput()->CreateBinaryImage(boundaryImage, 0, outputBoundaryPixelValue);
   }
-  else if(whichSideOfBoundary == HOLE)
+  else if(whichSideOfBoundary == PixelTypeEnum::HOLE)
   {
     binaryContourFilter->GetOutput()->CreateBinaryImage(boundaryImage, outputBoundaryPixelValue, 0);
   }
