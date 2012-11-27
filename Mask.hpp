@@ -16,6 +16,9 @@
  *
  *=========================================================================*/
 
+#ifndef Mask_HPP
+#define Mask_HPP
+
 #include "Mask.h" // Appease syntax parser
 
 // ITK
@@ -23,6 +26,14 @@
 
 // Submodules
 #include <ITKHelpers/ITKHelpers.h>
+
+namespace ITKHelpers
+{
+  void DeepCopy(const Mask* const input, Mask* const output)
+  {
+    output->DeepCopyFrom(input);
+  }
+}
 
 template<typename TImage, typename TColor>
 void Mask::ApplyToRGBImage(TImage* const image, const TColor& color) const
@@ -225,3 +236,5 @@ void Mask::CopyValidPixelsFromValue(const TImage* const inputImage, const unsign
     ++thisIterator;
     }
 }
+
+#endif // Mask_HPP

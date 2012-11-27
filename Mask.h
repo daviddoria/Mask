@@ -35,6 +35,14 @@
 
 // Custom
 
+class Mask;
+
+namespace ITKHelpers
+{
+  // Without 'inline' here, there are multiple definition errors
+  inline void DeepCopy(const Mask* const input, Mask* const output);
+}
+
 class Mask : public itk::Image< unsigned char, 2>
 {
 public:
