@@ -55,9 +55,7 @@ void TestComputeHoleBoundingBox()
   mask->SetRegions(imageRegion);
   mask->Allocate();
 
-  mask->SetValidValue(255);
-  mask->SetHoleValue(0);
-  mask->FillBuffer(mask->GetValidValue());
+  mask->FillBuffer(HoleMaskPixelTypeEnum::VALID);
 
   itk::ImageRegionIterator<Mask> maskIterator(mask, mask->GetLargestPossibleRegion());
 
@@ -66,7 +64,7 @@ void TestComputeHoleBoundingBox()
     if(maskIterator.GetIndex()[0] > 50 && maskIterator.GetIndex()[0] < 70 &&
       maskIterator.GetIndex()[1] > 50 && maskIterator.GetIndex()[1] < 70)
       {
-      maskIterator.Set(mask->GetHoleValue());
+      maskIterator.Set(HoleMaskPixelTypeEnum::HOLE);
       }
 
     ++maskIterator;
@@ -130,11 +128,11 @@ void CreateMask(Mask* const mask)
   {
     if(maskIterator.GetIndex()[0] < 70)
     {
-      maskIterator.Set(mask->GetValidValue());
+      maskIterator.Set(HoleMaskPixelTypeEnum::VALID);
     }
     else
     {
-      maskIterator.Set(mask->GetHoleValue());
+      maskIterator.Set(HoleMaskPixelTypeEnum::HOLE);
     }
 
     ++maskIterator;
@@ -153,7 +151,7 @@ void TestMaskedBlur()
 
   Mask::Pointer mask = Mask::New();
   CreateMask(mask);
-  std::cout << "Mask hole value: " << static_cast<int>(mask->GetHoleValue()) << std::endl;
+//  std::cout << "Mask hole value: " << static_cast<int>(mask->GetHoleValue()) << std::endl;
   ITKHelpers::WriteImage(mask.GetPointer(), "Mask.png");
 
   // Test with a normal variance
@@ -178,7 +176,7 @@ void TestMaskedBlur()
 
   Mask::Pointer mask = Mask::New();
   CreateMask(mask);
-  std::cout << "Mask hole value: " << static_cast<int>(mask->GetHoleValue()) << std::endl;
+//  std::cout << "Mask hole value: " << static_cast<int>(mask->GetHoleValue()) << std::endl;
   ITKHelpers::WriteImage(mask.GetPointer(), "Mask.png");
 
   float blurVariance = 2.0f;
@@ -200,7 +198,7 @@ void TestFindMaximumValueInMaskedRegion()
 
   Mask::Pointer mask = Mask::New();
   CreateMask(mask);
-  std::cout << "Mask hole value: " << static_cast<int>(mask->GetHoleValue()) << std::endl;
+//  std::cout << "Mask hole value: " << static_cast<int>(mask->GetHoleValue()) << std::endl;
 //  ITKHelpers::WriteImage(mask.GetPointer(), "Mask.png");
 
   itk::Index<2> regionCorner = {{0,0}};
@@ -209,7 +207,7 @@ void TestFindMaximumValueInMaskedRegion()
 
   ImageType::PixelType maxValue;
   MaskOperations::FindMaximumValueInMaskedRegion(image.GetPointer(), mask,
-                                                 region, mask->GetValidValue(),
+                                                 region, HoleMaskPixelTypeEnum::VALID,
                                                  maxValue);
 
   std::cout << "Scalar max: " << maxValue << std::endl;
@@ -224,7 +222,7 @@ void TestFindMaximumValueInMaskedRegion()
 
   Mask::Pointer mask = Mask::New();
   CreateMask(mask);
-  std::cout << "Mask hole value: " << static_cast<int>(mask->GetHoleValue()) << std::endl;
+//  std::cout << "Mask hole value: " << static_cast<int>(mask->GetHoleValue()) << std::endl;
 //  ITKHelpers::WriteImage(mask.GetPointer(), "Mask.png");
 
   itk::Index<2> regionCorner = {{0,0}};
@@ -233,7 +231,7 @@ void TestFindMaximumValueInMaskedRegion()
 
   ImageType::PixelType maxValue;
   MaskOperations::FindMaximumValueInMaskedRegion(image.GetPointer(), mask,
-                                                 region, mask->GetValidValue(),
+                                                 region, HoleMaskPixelTypeEnum::VALID,
                                                  maxValue);
 
   std::cout << "Vector max: " << maxValue << std::endl;
@@ -252,7 +250,7 @@ void TestFindMinimumValueInMaskedRegion()
 
   Mask::Pointer mask = Mask::New();
   CreateMask(mask);
-  std::cout << "Mask hole value: " << static_cast<int>(mask->GetHoleValue()) << std::endl;
+//  std::cout << "Mask hole value: " << static_cast<int>(mask->GetHoleValue()) << std::endl;
 //  ITKHelpers::WriteImage(mask.GetPointer(), "Mask.png");
 
   itk::Index<2> regionCorner = {{0,0}};
@@ -261,7 +259,7 @@ void TestFindMinimumValueInMaskedRegion()
 
   ImageType::PixelType minValue;
   MaskOperations::FindMinimumValueInMaskedRegion(image.GetPointer(), mask,
-                                                 region, mask->GetValidValue(),
+                                                 region, HoleMaskPixelTypeEnum::VALID,
                                                  minValue);
 
   std::cout << "Scalar min: " << minValue << std::endl;
@@ -276,7 +274,7 @@ void TestFindMinimumValueInMaskedRegion()
 
   Mask::Pointer mask = Mask::New();
   CreateMask(mask);
-  std::cout << "Mask hole value: " << static_cast<int>(mask->GetHoleValue()) << std::endl;
+//  std::cout << "Mask hole value: " << static_cast<int>(mask->GetHoleValue()) << std::endl;
 //  ITKHelpers::WriteImage(mask.GetPointer(), "Mask.png");
 
   itk::Index<2> regionCorner = {{0,0}};
@@ -285,7 +283,7 @@ void TestFindMinimumValueInMaskedRegion()
 
   ImageType::PixelType minValue;
   MaskOperations::FindMinimumValueInMaskedRegion(image.GetPointer(), mask,
-                                                 region, mask->GetValidValue(),
+                                                 region, HoleMaskPixelTypeEnum::VALID,
                                                  minValue);
 
   std::cout << "Vector min: " << minValue << std::endl;

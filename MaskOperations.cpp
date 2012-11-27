@@ -21,11 +21,6 @@
 // STL
 #include <stdexcept>
 
-#ifdef MaskUseVTK
-// VTK
-#include <vtkImageData.h>
-#endif
-
 namespace MaskOperations
 {
 
@@ -105,61 +100,14 @@ itk::ImageRegion<2> RandomValidRegion(const Mask* const mask, const unsigned int
 
 itk::ImageRegion<2> ComputeValidBoundingBox(const Mask* const mask)
 {
-  return ITKHelpers::ComputeBoundingBox(mask, mask->GetValidValue());
+  return ITKHelpers::ComputeBoundingBox(mask, HoleMaskPixelTypeEnum::VALID);
 }
 
 itk::ImageRegion<2> ComputeHoleBoundingBox(const Mask* const mask)
 {
-  return ITKHelpers::ComputeBoundingBox(mask, mask->GetHoleValue());
+  return ITKHelpers::ComputeBoundingBox(mask, HoleMaskPixelTypeEnum::HOLE);
 }
 
-#ifdef MaskUseVTK
-void SetMaskTransparency(const Mask* const input, vtkImageData* outputImage)
-{
-  assert(input);
-
-  // Setup and allocate the VTK image
-  outputImage->SetDimensions(input->GetLargestPossibleRegion().GetSize()[0],
-                             input->GetLargestPossibleRegion().GetSize()[1],
-                             1);
-
-  outputImage->AllocateScalars(VTK_UNSIGNED_CHAR, 4);
-
-  // Copy all of the pixels to the output
-  itk::ImageRegionConstIteratorWithIndex<Mask> imageIterator(input, input->GetLargestPossibleRegion());
-  imageIterator.GoToBegin();
-
-  while(!imageIterator.IsAtEnd())
-    {
-    unsigned char* pixel = static_cast<unsigned char*>(outputImage->GetScalarPointer(imageIterator.GetIndex()[0],
-                                                                                     imageIterator.GetIndex()[1],0));
-    /*
-    // Set masked pixels to bright green and opaque. Set non-masked pixels to black and fully transparent.
-    pixel[0] = 0;
-    pixel[1] = imageIterator.Get();
-    pixel[2] = 0;
-    */
-
-    // Set masked pixels to bright red and opaque. Set non-masked pixels to black and fully transparent.
-    pixel[0] = imageIterator.Get();
-    pixel[1] = 0;
-    pixel[2] = 0;
-
-    if(input->IsHole(imageIterator.GetIndex()))
-      {
-      pixel[3] = 255;
-      }
-    else
-      {
-      pixel[3] = 0;
-      }
-
-    ++imageIterator;
-    }
-
-  outputImage->Modified();
-}
-#endif
 
 std::vector<itk::ImageRegion<2> > GetAllFullyValidRegions(const Mask* const mask,
                                                           const itk::ImageRegion<2>& searchRegion,
@@ -307,14 +255,16 @@ std::pair<itk::Index<2>, itk::Index<2> > IntersectLineWithHole(const std::vector
   // loop to one before the end because we use the current and current+1 in the loop
   for(unsigned int i = 0; i < line.size() - 1; i++) 
     {
-    if(mask->GetPixel(line[i]) == 0 && mask->GetPixel(line[i+1]) != 0) // Found entry point
+    if(mask->GetPixel(line[i]) == HoleMaskPixelTypeEnum::VALID &&
+       mask->GetPixel(line[i+1]) == HoleMaskPixelTypeEnum::HOLE) // Found entry point
       {
       // We want to save the outside/valid/non-hole point. This is the first point (i) in the 'exit' case.
       interiorLine.first = line[i]; 
       startPoints++;
       }
 
-    if(mask->GetPixel(line[i]) != 0 && mask->GetPixel(line[i+1]) == 0) // Found exit point
+    if(mask->GetPixel(line[i]) == HoleMaskPixelTypeEnum::HOLE &&
+       mask->GetPixel(line[i+1]) == HoleMaskPixelTypeEnum::VALID) // Found exit point
       {
       // We want to save the outside/valid/non-hole point. This is the second point (i+1) in the 'exit' case.
       interiorLine.second = line[i+1]; 

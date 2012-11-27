@@ -27,49 +27,41 @@
 // Submodules
 #include <ITKHelpers/ITKHelpers.h>
 
-namespace ITKHelpers
-{
-  void DeepCopy(const Mask* const input, Mask* const output)
-  {
-    output->DeepCopyFrom(input);
-  }
-}
-
 template<typename TImage, typename TColor>
 void Mask::ApplyToRGBImage(TImage* const image, const TColor& color) const
 {
   // Using generics, we allow any Color class that has .red(), .green(), and .blue() member functions
   // to be used to specify the color.
   if(image->GetLargestPossibleRegion() != this->GetLargestPossibleRegion())
-    {
+  {
     std::cerr << "Image and mask must be the same size!" << std::endl
               << "Image region: " << image->GetLargestPossibleRegion() << std::endl
               << "Mask region: " << this->GetLargestPossibleRegion() << std::endl;
     return;
-    }
+  }
 
   // Color the hole pixels in the image.
   typename TImage::PixelType holeValue;
   holeValue.SetSize(image->GetNumberOfComponentsPerPixel());
   holeValue.Fill(0);
   if(image->GetNumberOfComponentsPerPixel() >= 3)
-    {
+  {
     holeValue[0] = color.red();
     holeValue[1] = color.green();
     holeValue[2] = color.blue();
-    }
+  }
 
   itk::ImageRegionConstIterator<Mask> maskIterator(this, this->GetLargestPossibleRegion());
 
   while(!maskIterator.IsAtEnd())
-    {
+  {
     if(this->IsHole(maskIterator.GetIndex()))
-      {
+    {
       image->SetPixel(maskIterator.GetIndex(), holeValue);
-      }
+    }
 
     ++maskIterator;
-    }
+  }
 }
 
 template<typename TImage>
@@ -137,70 +129,48 @@ void Mask::ApplyToScalarImage(TImage* const image, typename TImage::PixelType ho
 }
 
 template<typename TImage>
-void Mask::CreateFromImage(const TImage* const image, const typename TImage::PixelType& holeValue,
-                           const typename TImage::PixelType& validValue)
-{
-  this->SetRegions(image->GetLargestPossibleRegion());
-  this->Allocate();
-
-  ITKHelpers::DeepCopy(image, this);
-  this->HoleValue = holeValue;
-  this->ValidValue = validValue;
-
-//   itk::ImageRegionConstIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
-// 
-//   //std::cout << "Hole value: " << holeValue << std::endl;
-//   unsigned int counter = 0;
-//   while(!imageIterator.IsAtEnd())
-//     {
-//     typename TImage::PixelType currentPixel = imageIterator.Get();
-//     //std::cout << "Current color: " << currentPixel << std::endl;
-//     if(currentPixel == holeValue)
-//       {
-//       this->SetPixel(imageIterator.GetIndex(), this->HoleValue);
-//       counter++;
-//       }
-//     else if(currentPixel == validValue)
-//       {
-//       this->SetPixel(imageIterator.GetIndex(), this->ValidValue);
-//       }
-// 
-//     ++imageIterator;
-//     }
-//   std::cout << "Mask::CreateFromImage: There were " << counter << " mask pixels." << std::endl;
-}
-
-template<typename TImage>
-void Mask::CreateFromImage(const TImage* image, const typename TImage::PixelType& holeValue)
+void Mask::CreateFromImage(const TImage* const image, const HolePixelValueWrapper<typename TImage::PixelType>& holeValue,
+                           const ValidPixelValueWrapper<typename TImage::PixelType>& validValue)
 {
   this->SetRegions(image->GetLargestPossibleRegion());
   this->Allocate();
 
   itk::ImageRegionConstIterator<TImage> imageIterator(image, image->GetLargestPossibleRegion());
 
-  //std::cout << "Hole value: " << holeValue << std::endl;
-  unsigned int counter = 0;
+  unsigned int holeCounter = 0;
+  unsigned int validCounter = 0;
+  unsigned int undeterminedCounter = 0;
   while(!imageIterator.IsAtEnd())
   {
     typename TImage::PixelType currentPixel = imageIterator.Get();
-    //std::cout << "Current value: " << currentPixel << std::endl;
+    //std::cout << "Current color: " << currentPixel << std::endl;
     if(currentPixel == holeValue)
     {
-      this->SetPixel(imageIterator.GetIndex(), this->HoleValue);
-      counter++;
+      this->SetPixel(imageIterator.GetIndex(), HoleMaskPixelTypeEnum::HOLE);
+      holeCounter++;
+    }
+    else if(currentPixel == validValue)
+    {
+      this->SetPixel(imageIterator.GetIndex(), HoleMaskPixelTypeEnum::VALID);
+      validCounter++;
     }
     else
     {
-      this->SetPixel(imageIterator.GetIndex(), this->ValidValue);
+      this->SetPixel(imageIterator.GetIndex(), HoleMaskPixelTypeEnum::UNDETERMINED);
+      undeterminedCounter++;
     }
 
     ++imageIterator;
   }
-  std::cout << "Mask::CreateFromImage: There were " << counter << " mask pixels." << std::endl;
+  std::cout << "Mask::CreateFromImage: There were "
+               << holeCounter << " hole pixels." << std::endl
+               << validCounter << " valid pixels." << std::endl
+               << undeterminedCounter << " undetermined pixels." << std::endl;
 }
 
 template <typename TImage>
-void Mask::CopyHolesFromValue(const TImage* const inputImage, const unsigned int value)
+void Mask::CreateHolesFromValue(const TImage* const inputImage,
+                                const typename TImage::PixelType value)
 {
   assert(inputImage->GetLargestPossibleRegion() == this->GetLargestPossibleRegion());
 
@@ -208,18 +178,19 @@ void Mask::CopyHolesFromValue(const TImage* const inputImage, const unsigned int
   itk::ImageRegionIterator<Mask> thisIterator(this, this->GetLargestPossibleRegion());
 
   while(!inputIterator.IsAtEnd())
-    {
+  {
     if(inputIterator.Get() == value)
-      {
-      thisIterator.Set(this->HoleValue);
-      }
+    {
+      thisIterator.Set(HoleMaskPixelTypeEnum::HOLE);
+    }
     ++inputIterator;
     ++thisIterator;
-    }
+  }
 }
 
 template <typename TImage>
-void Mask::CopyValidPixelsFromValue(const TImage* const inputImage, const unsigned int value)
+void Mask::CreateValidPixelsFromValue(const TImage* const inputImage,
+                                    const typename TImage::PixelType value)
 {
   assert(inputImage->GetLargestPossibleRegion() == this->GetLargestPossibleRegion());
 
@@ -227,14 +198,46 @@ void Mask::CopyValidPixelsFromValue(const TImage* const inputImage, const unsign
   itk::ImageRegionIterator<Mask> thisIterator(this, this->GetLargestPossibleRegion());
 
   while(!inputIterator.IsAtEnd())
-    {
+  {
     if(inputIterator.Get() == value)
-      {
-      thisIterator.Set(this->ValidValue);
-      }
+    {
+      thisIterator.Set(HoleMaskPixelTypeEnum::VALID);
+    }
     ++inputIterator;
     ++thisIterator;
-    }
+  }
+}
+
+template <typename TPixel>
+void Mask::ReadFromImage(const std::string& filename, const HolePixelValueWrapper<TPixel>& holeValue,
+                         const ValidPixelValueWrapper<TPixel>& validValue)
+{
+  std::cout << "Reading mask from image: " << filename << std::endl;
+
+  // Ensure the input image can be interpreted as a mask.
+  unsigned int numberOfComponents =
+      ITKHelpers::GetNumberOfComponentsPerPixelInFile(filename);
+
+  if(!(numberOfComponents == 1 || numberOfComponents == 3))
+  {
+    std::stringstream ss;
+    ss << "Number of components for a mask must be 1 or 3! (" << filename
+       << " is " << numberOfComponents << ")";
+    throw std::runtime_error(ss.str());
+  }
+
+  // Read the image
+  typedef int ReadPixelType;
+  typedef itk::Image<ReadPixelType, 2> ImageType;
+  typedef  itk::ImageFileReader<ImageType> ImageReaderType;
+  ImageReaderType::Pointer imageReader = ImageReaderType::New();
+  imageReader->SetFileName(filename);
+  imageReader->Update();
+
+  CreateHolesFromValue(imageReader->GetOutput(),
+                       static_cast<ReadPixelType>(holeValue.Value));
+  CreateValidPixelsFromValue(imageReader->GetOutput(),
+                             static_cast<ReadPixelType>(validValue.Value));
 }
 
 #endif // Mask_HPP

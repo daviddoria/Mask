@@ -22,22 +22,20 @@ void TestFindBoundaryInRegion()
     mask->SetRegions(imageRegion);
     mask->Allocate();
 
-    mask->SetValidValue(255);
-    mask->SetHoleValue(0);
-    mask->FillBuffer(mask->GetValidValue());
+    mask->FillBuffer(HoleMaskPixelTypeEnum::VALID);
 
     itk::ImageRegionIterator<Mask> maskIterator(mask, mask->GetLargestPossibleRegion());
 
     while(!maskIterator.IsAtEnd())
-      {
+    {
       if(maskIterator.GetIndex()[0] > 50 && maskIterator.GetIndex()[0] < 70 &&
-        maskIterator.GetIndex()[1] > 50 && maskIterator.GetIndex()[1] < 70)
-        {
-        maskIterator.Set(mask->GetHoleValue());
-        }
+         maskIterator.GetIndex()[1] > 50 && maskIterator.GetIndex()[1] < 70)
+      {
+        maskIterator.Set(HoleMaskPixelTypeEnum::HOLE);
+      }
 
       ++maskIterator;
-      }
+    }
 
     ITKHelpers::WriteImage(mask.GetPointer(), "mask_A.png");
 
@@ -47,13 +45,13 @@ void TestFindBoundaryInRegion()
 
     {
     Mask::BoundaryImageType::Pointer boundaryImage = Mask::BoundaryImageType::New();
-    mask->CreateBoundaryImageInRegion(queryRegion, boundaryImage, Mask::PixelTypeEnum::VALID, 255);
+    mask->CreateBoundaryImageInRegion(queryRegion, boundaryImage, HoleMaskPixelTypeEnum::VALID, 255);
     ITKHelpers::WriteImage(boundaryImage.GetPointer(), "boundary_A_valid.png");
     }
 
     {
     Mask::BoundaryImageType::Pointer boundaryImage = Mask::BoundaryImageType::New();
-    mask->CreateBoundaryImageInRegion(queryRegion, boundaryImage, Mask::PixelTypeEnum::HOLE, 255);
+    mask->CreateBoundaryImageInRegion(queryRegion, boundaryImage, HoleMaskPixelTypeEnum::HOLE, 255);
     ITKHelpers::WriteImage(boundaryImage.GetPointer(), "boundary_A_hole.png");
     }
   }
@@ -67,22 +65,20 @@ void TestFindBoundaryInRegion()
     mask->SetRegions(imageRegion);
     mask->Allocate();
 
-    mask->SetValidValue(0);
-    mask->SetHoleValue(255);
-    mask->FillBuffer(mask->GetValidValue());
+    mask->FillBuffer(HoleMaskPixelTypeEnum::VALID);
 
     itk::ImageRegionIterator<Mask> maskIterator(mask, mask->GetLargestPossibleRegion());
 
     while(!maskIterator.IsAtEnd())
-      {
+    {
       if(maskIterator.GetIndex()[0] > 50 && maskIterator.GetIndex()[0] < 70 &&
-        maskIterator.GetIndex()[1] > 50 && maskIterator.GetIndex()[1] < 70)
-        {
-        maskIterator.Set(mask->GetHoleValue());
-        }
+         maskIterator.GetIndex()[1] > 50 && maskIterator.GetIndex()[1] < 70)
+      {
+        maskIterator.Set(HoleMaskPixelTypeEnum::HOLE);
+      }
 
       ++maskIterator;
-      }
+    }
 
     ITKHelpers::WriteImage(mask.GetPointer(), "mask_B.png");
 
@@ -92,13 +88,13 @@ void TestFindBoundaryInRegion()
 
     {
     Mask::BoundaryImageType::Pointer boundaryImage = Mask::BoundaryImageType::New();
-    mask->CreateBoundaryImageInRegion(queryRegion, boundaryImage, Mask::PixelTypeEnum::VALID, 255);
+    mask->CreateBoundaryImageInRegion(queryRegion, boundaryImage, HoleMaskPixelTypeEnum::VALID, 255);
     ITKHelpers::WriteImage(boundaryImage.GetPointer(), "boundary_B_valid.png");
     }
 
     {
     Mask::BoundaryImageType::Pointer boundaryImage = Mask::BoundaryImageType::New();
-    mask->CreateBoundaryImageInRegion(queryRegion, boundaryImage, Mask::PixelTypeEnum::HOLE, 255);
+    mask->CreateBoundaryImageInRegion(queryRegion, boundaryImage, HoleMaskPixelTypeEnum::HOLE, 255);
     ITKHelpers::WriteImage(boundaryImage.GetPointer(), "boundary_B_hole.png");
     }
   }

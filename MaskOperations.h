@@ -29,18 +29,8 @@
 #include "itkIndex.h"
 #include "itkImageRegion.h"
 
-#ifdef MaskUseVTK
-// VTK
-class vtkImageData;
-#endif
-
 namespace MaskOperations
 {
-
-// Functions with VTK
-#ifdef MaskUseVTK
-void SetMaskTransparency(const Mask* const input, vtkImageData* outputImage);
-#endif
 
 // Functions
 /** Return a random region that is entirely inside the hole. */
@@ -81,17 +71,6 @@ itk::ImageRegion<2> GetRandomValidPatchInRegion(const Mask* const mask,
 itk::ImageRegion<2> GetRandomValidPatchInRegion(const Mask* const mask,
                                                 const itk::ImageRegion<2>& searchRegion,
                                                 const unsigned int patchRadius);
-
-////////////////// Templates with VTK ////////////////
-#ifdef MaskUseVTK
-template <typename TImage>
-void ITKImageToVTKImageMasked(const ITKHelpers::FloatVectorImageType* const image, const Mask* const mask,
-                              vtkImageData* const outputImage, const unsigned char maskColor[3]);
-
-template <typename TPixel>
-void ITKImageToVTKImageMasked(const typename itk::VectorImage<TPixel, 2>* const image, const Mask* const mask,
-                              vtkImageData* const outputImage, const unsigned char maskColor[3]);
-#endif
 
 ////////////////// Templates ////////////////
 

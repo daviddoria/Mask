@@ -33,6 +33,9 @@
 #include "itkSignedDanielssonDistanceMapImageFilter.h"
 #include "itkSimpleFastMutexLock.h"
 
+#ifndef MaskOperations_HPP
+#define MaskOperations_HPP
+
 // VTK
 #ifdef MaskUseVTK
   #include <vtkImageData.h>
@@ -66,7 +69,7 @@ void CopyRegionIntoHolePortionOfTargetRegion(const TImage* const sourceImage, TI
 
   while(!sourceIterator.IsAtEnd())
   {
-    if(maskIterator.Get() == mask->GetHoleValue()) // we are in the target region
+    if(maskIterator.Get() == HoleMaskPixelTypeEnum::HOLE) // we are in the target region
     {
       destinationIterator.Set(sourceIterator.Get());
     }
@@ -355,7 +358,7 @@ void InterpolateThroughHole(TImage* const image, Mask* const mask, const itk::In
     
   // For a line thickness of 0
     image->SetPixel(pixels[holePixelId], value0 + holePixelId * step);
-    mask->SetPixel(pixels[holePixelId], mask->GetValidValue());
+    mask->SetPixel(pixels[holePixelId], HoleMaskPixelTypeEnum::VALID);
 
     // For a hacky thicker line
     std::vector<itk::Index<2> > indices = ITKHelpers::GetIndicesInRegion(ITKHelpers::GetRegionInRadiusAroundPixel(pixels[holePixelId], lineThickness));
@@ -364,7 +367,7 @@ void InterpolateThroughHole(TImage* const image, Mask* const mask, const itk::In
       if(mask->IsHole(indices[neighborId]))
         {
         image->SetPixel(indices[neighborId], value0 + holePixelId * step);
-        mask->SetPixel(indices[neighborId], mask->GetValidValue());
+        mask->SetPixel(indices[neighborId], HoleMaskPixelTypeEnum::VALID);
         }
       }
     }
@@ -388,7 +391,7 @@ void InteroplateLineBetweenPointsWithFilling(TImage* const image, Mask* const ma
     {
     //std::cout << "pixel " << i << " " << pixels[i] << std::endl;
     image->SetPixel(pixels[i], value0 + i * step);
-    mask->SetPixel(pixels[i], mask->GetValidValue());
+    mask->SetPixel(pixels[i], HoleMaskPixelTypeEnum::VALID);
     }
 }
 
@@ -930,13 +933,13 @@ void CopyAtValues(const TImage* const input, const Mask::PixelType& value,
 template <class TImage>
 void CopyInHoleRegion(const TImage* const input, TImage* const output, const Mask* const mask)
 {
-  CopyAtValues(input, mask->GetHoleValue(), mask, output);
+  CopyAtValues(input, HoleMaskPixelTypeEnum::HOLE, mask, output);
 }
 
 template <class TImage>
 void CopyInValidRegion(const TImage* const input, TImage* const output, const Mask* const mask)
 {
-  CopyAtValues(input, mask->GetValidValue(), mask, output);
+  CopyAtValues(input, HoleMaskPixelTypeEnum::VALID, mask, output);
 }
 
 template<typename TImage>
@@ -955,118 +958,6 @@ void SetHolePixelsToConstant(TImage* const image, const typename TImage::PixelTy
   }
 }
 
-#ifdef MaskUseVTK
-	template <typename TImage>
-	void ITKImageToVTKImageMasked(const TImage* const image, const Mask* const mask,
-								  vtkImageData* const outputImage, const unsigned char maskColor[3])
-	{
-	  assert(mask);
-	  // This function assumes an ND (with N>3) image has the first 3 channels as RGB and extra
-	  // information in the remaining channels.
-
-	  //std::cout << "ITKImagetoVTKRGBImage()" << std::endl;
-	  if(image->GetNumberOfComponentsPerPixel() < 3)
-	  {
-		std::cerr << "The input image has " << image->GetNumberOfComponentsPerPixel()
-				  << " components, but at least 3 are required." << std::endl;
-		return;
-	  }
-
-	  // Setup and allocate the image data
-	  //outputImage->SetNumberOfScalarComponents(3);
-	  //outputImage->SetScalarTypeToUnsignedChar();
-	  outputImage->SetDimensions(image->GetLargestPossibleRegion().GetSize()[0],
-								 image->GetLargestPossibleRegion().GetSize()[1],
-								 1);
-	  //outputImage->AllocateScalars();
-	  outputImage->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
-
-	  // Copy all of the input image pixels to the output image
-	  itk::ImageRegionConstIteratorWithIndex<TImage>
-			 imageIterator(image,image->GetLargestPossibleRegion());
-	  imageIterator.GoToBegin();
-
-	  while(!imageIterator.IsAtEnd())
-	  {
-		unsigned char* VTKPixel = static_cast<unsigned char*>(
-			  outputImage->GetScalarPointer(imageIterator.GetIndex()[0], imageIterator.GetIndex()[1],0));
-		if(mask->IsValid(imageIterator.GetIndex()))
-		{
-		  for(unsigned int component = 0; component < 3; component++)
-		  {
-			VTKPixel[component] = static_cast<unsigned char>(imageIterator.Get()[component]);
-		  }
-		}
-		else
-		{
-		  for(unsigned int component = 0; component < 3; component++)
-		  {
-			VTKPixel[component] = maskColor[component];
-		  }
-		}
-
-		++imageIterator;
-	  }
-
-	  outputImage->Modified();
-	}
-
-	template <typename TPixel>
-	void ITKImageToVTKImageMasked(const typename itk::VectorImage<TPixel, 2>* const image, const Mask* const mask,
-								  vtkImageData* const outputImage, const unsigned char maskColor[3])
-	{
-	  assert(mask);
-
-	  typedef typename itk::VectorImage<TPixel, 2> VectorImageType;
-	  // This function assumes an ND (with N>3) image has the first 3 channels as RGB and extra
-	  // information in the remaining channels.
-
-	  //std::cout << "ITKImagetoVTKRGBImage()" << std::endl;
-	  if(image->GetNumberOfComponentsPerPixel() < 3)
-	  {
-		std::cerr << "The input image has " << image->GetNumberOfComponentsPerPixel()
-				  << " components, but at least 3 are required." << std::endl;
-		return;
-	  }
-
-	  // Setup and allocate the image data
-	  //outputImage->SetNumberOfScalarComponents(3);
-	  //outputImage->SetScalarTypeToUnsignedChar();
-	  outputImage->SetDimensions(image->GetLargestPossibleRegion().GetSize()[0],
-								 image->GetLargestPossibleRegion().GetSize()[1],
-								 1);
-	  //outputImage->AllocateScalars();
-	  outputImage->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
-
-	  // Copy all of the input image pixels to the output image
-	  itk::ImageRegionConstIteratorWithIndex<VectorImageType>
-			 imageIterator(image,image->GetLargestPossibleRegion());
-	  imageIterator.GoToBegin();
-
-	  while(!imageIterator.IsAtEnd())
-	  {
-		unsigned char* VTKPixel = static_cast<unsigned char*>(
-			  outputImage->GetScalarPointer(imageIterator.GetIndex()[0], imageIterator.GetIndex()[1],0));
-		if(mask->IsValid(imageIterator.GetIndex()))
-		{
-		  for(unsigned int component = 0; component < 3; component++)
-		  {
-			VTKPixel[component] = static_cast<unsigned char>(imageIterator.Get()[component]);
-		  }
-		}
-		else
-		{
-		  for(unsigned int component = 0; component < 3; component++)
-		  {
-			VTKPixel[component] = maskColor[component];
-		  }
-		}
-
-		++imageIterator;
-	  }
-
-	  outputImage->Modified();
-	}
-#endif // #if MaskUseVTK
-
 } // end namespace
+
+#endif // MaskOperations_HPP

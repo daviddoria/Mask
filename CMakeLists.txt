@@ -14,17 +14,6 @@ if(UNIX)
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAS_CPP11") # Can't use HAS_C++11 - it doesn't like the + characters in the define
 endif(UNIX)
 
-# VTK
-option(MaskUseVTK "Enable VTK functions in MaskOperations?" OFF)
-if(MaskUseVTK)
-  FIND_PACKAGE(VTK)
-  if(VTK_FOUND)
-    INCLUDE(${VTK_USE_FILE})
-    set(Mask_libraries ${Mask_libraries} ${VTK_LIBRARIES})
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMASK_USE_VTK")
-  endif()
-endif()
-
 # ITK
 if(NOT ITK_FOUND)
   FIND_PACKAGE(ITK REQUIRED ITKCommon ITKIOImageBase ITKIOPNG ITKIOMeta
@@ -47,29 +36,40 @@ target_link_libraries(Mask ${Mask_libraries})
 set(Mask_libraries ${Mask_libraries} Mask)
 
 # Add non-compiled sources to the project
-add_custom_target(MaskSources SOURCES Mask.h MaskQt.h Mask.hpp MaskOperations.hpp)
+add_custom_target(MaskSources SOURCES Mask.h Mask.hpp
+MaskQt.h
+MaskVTK.h
+MaskVTK.hpp
+MaskOperations.hpp)
 
 # Only build the MaskQt library if the user wants it
-SET(Mask_BuildMaskQt OFF CACHE BOOL "Build MaskQt?")
+option(Mask_BuildMaskQt "Build MaskQt?")
 if(Mask_BuildMaskQt)
-  FIND_PACKAGE(Qt4)
+  FIND_PACKAGE(Qt4 REQUIRED)
   INCLUDE(${QT_USE_FILE})
-  add_library(MaskQt Mask.cpp MaskQt.cpp)
+
+  add_library(MaskQt MaskQt.cpp)
+  target_link_libraries(MaskQt Mask)
+  set(Mask_libraries ${Mask_libraries} MaskQt)
 endif(Mask_BuildMaskQt)
 
+# Only build the MaskVTK library if the user wants it
+option(Mask_BuildMaskVTK "Build MaskQt?")
+if(Mask_BuildMaskVTK)
+  FIND_PACKAGE(VTK REQUIRED)
+  INCLUDE(${VTK_USE_FILE})
+  set(Mask_libraries ${Mask_libraries} ${VTK_LIBRARIES})
+
+  add_library(MaskVTK MaskVTK.cpp)
+  target_link_libraries(MaskVTK Mask)
+  set(Mask_libraries ${Mask_libraries} MaskVTK)
+endif(Mask_BuildMaskVTK)
+
 # Allow this project to be detected and used as a submodule
-set(Mask_include_dirs ${Mask_include_dirs} ${CMAKE_CURRENT_SOURCE_DIR})
-set_property(GLOBAL PROPERTY MaskIncludeDirs ${Mask_include_dirs})
-set_property(GLOBAL PROPERTY MaskLibs ${Mask_libraries})
+CreateSubmodule(Mask)
 
 # Build the tests if requested
 option(Mask_BuildTests "Build Mask tests?" OFF)
 if(Mask_BuildTests)
   add_subdirectory(Tests)
 endif(Mask_BuildTests)
-
-# Display where this code was used from (if it is used as a submodule, there may be multiple instances of this submodule in the project, only the first of which is used)
-option(Mask_ShowSubmoduleLocation "Show the path from which Mask was used?" OFF)
-if(Mask_ShowSubmoduleLocation)
-  message("Mask used from ${CMAKE_CURRENT_SOURCE_DIR}")
-endif(Mask_ShowSubmoduleLocation)

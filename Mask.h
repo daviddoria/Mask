@@ -33,17 +33,63 @@
 // ITK
 #include "itkImage.h"
 
-// Custom
+enum class HoleMaskPixelTypeEnum {HOLE, VALID, UNDETERMINED};
 
-class Mask;
+/** This must be defined in order to create an itk::Image<HoleMaskPixelTypeEnum> because
+  * The Set/Get macros require a way to output the pixel type. */
+std::ostream& operator<<(std::ostream& output, const HoleMaskPixelTypeEnum &pixelType);
 
-namespace ITKHelpers
+struct HoleValueWrapper
 {
-  // Without 'inline' here, there are multiple definition errors
-  inline void DeepCopy(const Mask* const input, Mask* const output);
-}
+  HoleValueWrapper(HoleMaskPixelTypeEnum value) : Value(value){}
 
-class Mask : public itk::Image< unsigned char, 2>
+  operator HoleMaskPixelTypeEnum()
+  {
+    return this->Value;
+  }
+
+  HoleMaskPixelTypeEnum Value;
+};
+
+struct ValidValueWrapper
+{
+  ValidValueWrapper(HoleMaskPixelTypeEnum value) : Value(value){}
+
+  operator HoleMaskPixelTypeEnum()
+  {
+    return this->Value;
+  }
+
+  HoleMaskPixelTypeEnum Value;
+};
+
+template <typename T>
+struct HolePixelValueWrapper
+{
+  HolePixelValueWrapper(T value) : Value(value){}
+
+  operator T()
+  {
+    return this->Value;
+  }
+
+  T Value;
+};
+
+template <typename T>
+struct ValidPixelValueWrapper
+{
+  ValidPixelValueWrapper(T value) : Value(value){}
+
+  operator T()
+  {
+    return this->Value;
+  }
+
+  T Value;
+};
+
+class Mask : public itk::Image<HoleMaskPixelTypeEnum, 2>
 {
 public:
   /** Standard typedefs. */
@@ -86,12 +132,6 @@ public:
   /** Determine if a pixel is a hole pixel.*/
   bool IsHole(const itk::Index<2>& index) const;
 
-  /** Determine if a value matches the mask's hole value.*/
-  bool IsHoleValue(const unsigned char value) const;
-
-  /** Determine if a value matches the mask's valid value.*/
-  bool IsValidValue(const unsigned char value) const;
-
   /** Determine if an entire region consists of hole pixels.*/
   bool IsHole(const itk::ImageRegion<2>& region) const;
 
@@ -126,12 +166,6 @@ public:
   /** Decrease the size of the hole.*/
   void ShrinkHole(const unsigned int kernelRadius);
 
-  /** Specify which value should be considered a hole.*/
-  void SetHoleValue(const unsigned char value);
-
-  /** Specify which value should be considered valid.*/
-  void SetValidValue(const unsigned char value);
-
   /** Mark the pixel as a hole.*/
   void SetHole(const itk::Index<2>& index);
 
@@ -141,41 +175,26 @@ public:
   /** Mark the region as valid.*/
   void SetValid(const itk::ImageRegion<2>& region);
 
-  /** Get the value that is considered a hole.*/
-  unsigned char GetHoleValue() const;
-
-  /** Get the value that is considered valid.*/
-  unsigned char GetValidValue() const;
-
-  /** Print information about the Mask.*/
-  void OutputMembers() const;
-
-  /** Copy a mask.*/
-  void DeepCopyFrom(const Mask* const inputMask);
-
-  /** Copy information from another mask.*/
-  void CopyInformationFrom(const Mask* const inputMask);
-
   /** Copy the holes from a mask.*/
   void CopyHolesFrom(const Mask* const inputMask);
 
   /** Create holes from specified pixels in an image.*/
   template <typename TImage>
-  void CopyHolesFromValue(const TImage* const inputImage, const unsigned int value);
-
-  enum class PixelTypeEnum {HOLE, VALID};
+  void CreateHolesFromValue(const TImage* const inputImage,
+                            const typename TImage::PixelType value);
 
   /** Create valid pixels from specified pixels in an image.*/
   template <typename TImage>
-  void CopyValidPixelsFromValue(const TImage* const inputImage, const unsigned int value);
+  void CreateValidPixelsFromValue(const TImage* const inputImage,
+                                  const typename TImage::PixelType value);
 
   /** Find the boundary of the Mask. The output image is black with boundary pixels of value
     * 'outputBoundaryPixelValue'. */
   typedef itk::Image<unsigned char, 2> BoundaryImageType;
-  void CreateBoundaryImage(BoundaryImageType* const boundary, const PixelTypeEnum& whichSideOfBoundary,
+  void CreateBoundaryImage(BoundaryImageType* const boundary, const HoleMaskPixelTypeEnum& whichSideOfBoundary,
                            const BoundaryImageType::PixelType& outputBoundaryPixelValue = 255) const;
   void CreateBoundaryImageInRegion(const itk::ImageRegion<2>& region, BoundaryImageType* const boundaryImage,
-                                   const PixelTypeEnum& whichSideOfBoundary,
+                                   const HoleMaskPixelTypeEnum& whichSideOfBoundary,
                                    const BoundaryImageType::PixelType& outputBoundaryPixelValue = 255) const;
 
   /** Recolor the hole pixels in 'image' a specified 'color'. 'color' cannot have a
@@ -204,21 +223,18 @@ public:
   template<typename TImage, typename TColor>
   void ApplyToRGBImage(TImage* const image, const TColor& color) const;
 
-  /** Create a mask from a mask image. That is, take a binary image (or grayscale) and convert it to a Mask.
-    * Consider 'holeValue' as holes, and everything else as valid. */
-  template<typename TImage>
-  void CreateFromImage(const TImage* const image, const typename TImage::PixelType& holeValue);
-
   /** Create a mask from a mask image. That is, take a binary image (or grayscale) and convert it to a Mask. */
   template<typename TImage>
-  void CreateFromImage(const TImage* const image, const typename TImage::PixelType& holeValue,
-                       const typename TImage::PixelType& validValue);
+  void CreateFromImage(const TImage* const image,
+                       const HolePixelValueWrapper<typename TImage::PixelType>& holeValue,
+                       const ValidPixelValueWrapper<typename TImage::PixelType>& validValue);
 
   /** Get a list of the valid neighbors of a pixel.*/
   std::vector<itk::Index<2> > GetValidNeighbors(const itk::Index<2>& pixel) const;
 
   /** Get a list of the valid neighbors of a 'pixel' in 'region'.*/
-  std::vector<itk::Index<2> > GetValidNeighborsInRegion(const itk::Index<2>& pixel, const itk::ImageRegion<2>& region) const;
+  std::vector<itk::Index<2> > GetValidNeighborsInRegion(const itk::Index<2>& pixel,
+                                                        const itk::ImageRegion<2>& region) const;
 
   /** Determine if a pixel has at least 1 hole 8-neighbor.*/
   bool HasHoleNeighbor(const itk::Index<2>& pixel) const;
@@ -243,7 +259,8 @@ public:
   std::vector<itk::Index<2> > GetHoleNeighbors(const itk::Index<2>& pixel) const;
 
   /** Get a list of the hole neighbors of a 'pixel' in 'region'.*/
-  std::vector<itk::Index<2> > GetHoleNeighborsInRegion(const itk::Index<2>& pixel, const itk::ImageRegion<2>& region) const;
+  std::vector<itk::Index<2> > GetHoleNeighborsInRegion(const itk::Index<2>& pixel,
+                                                       const itk::ImageRegion<2>& region) const;
 
   /** Get a list of the offsets of the valid neighbors of a pixel.*/
   std::vector<itk::Offset<2> > GetValidNeighborOffsets(const itk::Index<2>& pixel) const;
@@ -277,13 +294,14 @@ public:
 
   /** Find hole pixels that are touching valid pixels.*/
   std::vector<itk::Index<2> > FindBoundaryPixelsInRegion(const itk::ImageRegion<2>& region,
-                                                         const Mask::PixelType& whichSideOfBoundary) const;
+                                                         const HoleMaskPixelTypeEnum& whichSideOfBoundary) const;
 
   /** Find hole pixels that are touching valid pixels.*/
   std::vector<itk::Index<2> > FindBoundaryPixels(const Mask::PixelType& whichSideOfBoundary) const;
 
   /** Count hole pixels that are touching valid pixels.*/
-  unsigned int CountBoundaryPixels(const itk::ImageRegion<2>& region, const Mask::PixelType& whichSideOfBoundary) const;
+  unsigned int CountBoundaryPixels(const itk::ImageRegion<2>& region,
+                                   const HoleMaskPixelTypeEnum& whichSideOfBoundary) const;
 
   /** Count hole pixels that are touching valid pixels.*/
   unsigned int CountBoundaryPixels(const Mask::PixelType& whichSideOfBoundary) const;
@@ -319,7 +337,9 @@ public:
   void Read(const std::string& filename);
 
   /** Read the mask from an image file.*/
-  void ReadFromImage(const std::string& filename);
+  template <typename TPixel>
+  void ReadFromImage(const std::string& filename, const HolePixelValueWrapper<TPixel>& holeValue,
+                     const ValidPixelValueWrapper<TPixel>& validValue);
 
   /** Mark the pixel as a hole.*/
   void MarkAsHole(const itk::Index<2>& pixel);
@@ -334,21 +354,6 @@ private:
 
   /** Constructor. */
   Mask();
-
-#ifdef HAS_CPP11
-  /** Pixels with this value indicate a hole. */
-  unsigned char HoleValue = 255;
-
-  /** Pixels with this value are valid. */
-  unsigned char ValidValue = 0;
-#else
-  /** Pixels with this value indicate a hole. */
-  unsigned char HoleValue;
-
-  /** Pixels with this value are valid. */
-  unsigned char ValidValue;
-#endif
-
 };
 
 #include "Mask.hpp"

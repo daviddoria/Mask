@@ -26,9 +26,9 @@
 
 namespace MaskQt
 {
-QImage GetQtImage(const Mask* const mask);
+  QImage GetQtImage(const Mask* const mask);
 
-QImage GetQtImage(const Mask* const mask, const itk::ImageRegion<2>& region);
+  QImage GetQtImage(const Mask* const mask, const itk::ImageRegion<2>& region);
 }
 
 #endif
