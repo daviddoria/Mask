@@ -23,7 +23,7 @@ if(NOT ITK_FOUND)
   INCLUDE(${ITK_USE_FILE})
 
   if( "${ITK_VERSION_MAJOR}" LESS 4 )
-    MESSAGE(FATAL_ERROR "You must build ImageGraphCutSegmentation with ITK >= 4.0!")
+    MESSAGE(FATAL_ERROR "You must build Mask with ITK >= 4.0!")
   endif( "${ITK_VERSION_MAJOR}" LESS 4 )
 endif()
 set(Mask_libraries ${Mask_libraries} ${ITK_LIBRARIES})

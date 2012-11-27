@@ -303,41 +303,14 @@ bool Mask::IsHole(const itk::Index<2>& index) const
 
 bool Mask::IsHole(const itk::ImageRegion<2>& region) const
 {
-  // If any of the pixels in the region are not hole pixels, the region is not entirely hole pixels.
-
-  itk::ImageRegionConstIterator<Mask> maskIterator(this, region);
-
-  while(!maskIterator.IsAtEnd())
-  {
-    //if(!this->IsHole(maskIterator.GetIndex()))
-    if(maskIterator.Get() != HoleMaskPixelTypeEnum::HOLE)
-    {
-      return false;
-    }
-
-    ++maskIterator;
-  }
-  return true;
+  return ITKHelpers::AllPixelsEqualTo(this, region,
+                                      HoleMaskPixelTypeEnum::HOLE);
 }
 
 bool Mask::IsValid(const itk::ImageRegion<2>& region) const
 {
-  // If any of the pixels in the region are invalid, the region is invalid.
-
-  itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(this, region);
-
-  while(!maskIterator.IsAtEnd())
-  {
-    if(maskIterator.Get() != HoleMaskPixelTypeEnum::VALID)
-    {
-      //std::cout << "Mask::IsValid - Pixel " << maskIterator.GetIndex() << " has value " << static_cast<unsigned int>(maskIterator.Get())
-      //          << " which makes the region invalid because Mask::ValidValue = " << static_cast<unsigned int>(this->ValidValue) << std::endl;
-      return false;
-    }
-
-    ++maskIterator;
-  }
-  return true;
+  return ITKHelpers::AllPixelsEqualTo(this, region,
+                                      HoleMaskPixelTypeEnum::VALID);
 }
 
 bool Mask::IsValid(const itk::Index<2>& index) const
