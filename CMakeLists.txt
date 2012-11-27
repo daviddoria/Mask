@@ -3,20 +3,15 @@ cmake_minimum_required(VERSION 2.8)
 project(Mask)
 SET(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-# Only include Helpers if it is not already available
-get_property(FoundITKHelpers GLOBAL PROPERTY ITKHelpersIncludeDirs SET)
-if(NOT FoundITKHelpers)
-  add_subdirectory(ITKHelpers)
-endif()
+add_subdirectory(CMakeHelpers)
 
-get_property(ITKHelpersIncludeDirs GLOBAL PROPERTY ITKHelpersIncludeDirs)
-set(Mask_include_dirs ${Mask_include_dirs} ${ITKHelpersIncludeDirs})
-get_property(ITKHelpersLibs GLOBAL PROPERTY ITKHelpersLibs)
-set(Mask_libraries ${Mask_libraries} ${ITKHelpersLibs})
+UseSubmodule(ITKHelpers Mask)
 
 # Enable c++11
 if(UNIX)
+  message("System is UNIX - enabling C++11")
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAS_CPP11") # Can't use HAS_C++11 - it doesn't like the + characters in the define
 endif(UNIX)
 
 # VTK

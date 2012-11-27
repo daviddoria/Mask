@@ -1,3 +1,6 @@
 [submodule "ITKHelpers"]
 	path = ITKHelpers
 	url = https://github.com/daviddoria/ITKHelpers.git
+[submodule "CMakeHelpers"]
+	path = CMakeHelpers
+	url = https://github.com/daviddoria/CMakeHelpers.git
