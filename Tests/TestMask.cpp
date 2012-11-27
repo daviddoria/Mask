@@ -3,15 +3,24 @@
 // Submodules
 #include <ITKHelpers/ITKHelpers.h>
 
-void TestFindBoundaryInRegion();
+static bool TestFindBoundaryInRegion();
 
-int main( int argc, char ** argv )
+int main()
 {
-  TestFindBoundaryInRegion();
-  return 0;
+  bool allPass = true;
+  allPass &= TestFindBoundaryInRegion();
+
+  if(allPass)
+  {
+    return EXIT_SUCCESS;
+  }
+  else
+  {
+    return EXIT_FAILURE;
+  }
 }
 
-void TestFindBoundaryInRegion()
+bool TestFindBoundaryInRegion()
 {
   // Test with 255=valid
   {
@@ -98,4 +107,6 @@ void TestFindBoundaryInRegion()
     ITKHelpers::WriteImage(boundaryImage.GetPointer(), "boundary_B_hole.png");
     }
   }
+
+  return true;
 }

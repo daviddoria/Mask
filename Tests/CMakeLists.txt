@@ -4,7 +4,9 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 add_executable(TestMask TestMask.cpp)
-target_link_libraries(TestMask Mask)
+target_link_libraries(TestMask ${Mask_libraries})
+add_test(TestMask TestMask)
 
 add_executable(TestMaskOperations TestMaskOperations.cpp)
-target_link_libraries(TestMaskOperations Mask)
+target_link_libraries(TestMaskOperations ${Mask_libraries})
+add_test(TestMaskOperations TestMaskOperations)

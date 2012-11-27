@@ -33,36 +33,16 @@
 // ITK
 #include "itkImage.h"
 
+/** The pixels in the mask have only these possible values. */
 enum class HoleMaskPixelTypeEnum {HOLE, VALID, UNDETERMINED};
 
 /** This must be defined in order to create an itk::Image<HoleMaskPixelTypeEnum> because
   * The Set/Get macros require a way to output the pixel type. */
 std::ostream& operator<<(std::ostream& output, const HoleMaskPixelTypeEnum &pixelType);
 
-struct HoleValueWrapper
-{
-  HoleValueWrapper(HoleMaskPixelTypeEnum value) : Value(value){}
-
-  operator HoleMaskPixelTypeEnum()
-  {
-    return this->Value;
-  }
-
-  HoleMaskPixelTypeEnum Value;
-};
-
-struct ValidValueWrapper
-{
-  ValidValueWrapper(HoleMaskPixelTypeEnum value) : Value(value){}
-
-  operator HoleMaskPixelTypeEnum()
-  {
-    return this->Value;
-  }
-
-  HoleMaskPixelTypeEnum Value;
-};
-
+/** This class forces us to pass functions values as HoleValueWrapper(0) instead of just "0"
+  * so that we can be sure that a hole value is getting passed where a hole value is expected,
+  * and not accidentally confuse the order of hole/valid arguments silently. */
 template <typename T>
 struct HolePixelValueWrapper
 {
@@ -76,6 +56,9 @@ struct HolePixelValueWrapper
   T Value;
 };
 
+/** This class forces us to pass functions values as ValidValueWrapper(0) instead of just "0"
+  * so that we can be sure that a value value is getting passed where a value value is expected,
+  * and not accidentally confuse the order of hole/valid arguments silently. */
 template <typename T>
 struct ValidPixelValueWrapper
 {
