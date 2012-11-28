@@ -215,20 +215,20 @@ public:
                        const ValidPixelValueWrapper<typename TImage::PixelType>& validValue);
 
   /** Get a list of the valid neighbors of a pixel.*/
-  std::vector<itk::Index<2> > GetValidNeighbors(const itk::Index<2>& pixel) const;
+  std::vector<itk::Index<2> > GetValid8Neighbors(const itk::Index<2>& pixel) const;
 
   /** Get a list of the valid neighbors of a 'pixel' in 'region'.*/
-  std::vector<itk::Index<2> > GetValidNeighborsInRegion(const itk::Index<2>& pixel,
+  std::vector<itk::Index<2> > GetValid8NeighborsInRegion(const itk::Index<2>& pixel,
                                                         const itk::ImageRegion<2>& region) const;
 
   /** Determine if a pixel has at least 1 hole 8-neighbor.*/
-  bool HasHoleNeighbor(const itk::Index<2>& pixel) const;
+  bool HasHole8Neighbor(const itk::Index<2>& pixel) const;
 
   /** Determine if a pixel has at least 1 hole 8-neighbor in 'region'.*/
-  bool HasHoleNeighborInRegion(const itk::Index<2>& pixel, const itk::ImageRegion<2>& region) const;
+  bool HasHole8NeighborInRegion(const itk::Index<2>& pixel, const itk::ImageRegion<2>& region) const;
 
   /** Determine if a pixel has at least 1 valid 8-neighbor.*/
-  bool HasValidNeighbor(const itk::Index<2>& pixel) const;
+  bool HasValid8Neighbor(const itk::Index<2>& pixel) const;
 
   /** Determine if a pixel has at least 1 valid 4-neighbor.*/
   bool HasValid4Neighbor(const itk::Index<2>& pixel);
@@ -241,17 +241,17 @@ public:
   std::vector<itk::Index<2> > GetValid4Neighbors(const itk::Index<2>& pixel);
 
   /** Get a list of the hole neighbors of a pixel.*/
-  std::vector<itk::Index<2> > GetHoleNeighbors(const itk::Index<2>& pixel) const;
+  std::vector<itk::Index<2> > GetHole8Neighbors(const itk::Index<2>& pixel) const;
 
   /** Get a list of the hole neighbors of a 'pixel' in 'region'.*/
-  std::vector<itk::Index<2> > GetHoleNeighborsInRegion(const itk::Index<2>& pixel,
+  std::vector<itk::Index<2> > GetHole8NeighborsInRegion(const itk::Index<2>& pixel,
                                                        const itk::ImageRegion<2>& region) const;
 
   /** Get a list of the offsets of the valid neighbors of a pixel.*/
-  std::vector<itk::Offset<2> > GetValidNeighborOffsets(const itk::Index<2>& pixel) const;
+  std::vector<itk::Offset<2> > GetValid8NeighborOffsets(const itk::Index<2>& pixel) const;
 
   /** Get a list of the offsets of the hole neighbors of a pixel.*/
-  std::vector<itk::Offset<2> > GetHoleNeighborOffsets(const itk::Index<2>& pixel) const;
+  std::vector<itk::Offset<2> > GetHole8NeighborOffsets(const itk::Index<2>& pixel) const;
 
   /** Get a list of the valid pixels in a region. 'region' is not passed by reference because
     * it is cropped by the image before computing the valid pixels. */

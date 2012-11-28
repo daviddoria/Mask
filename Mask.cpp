@@ -516,68 +516,65 @@ void Mask::CreateBoundaryImage(itk::Image<unsigned char, 2>* const boundaryImage
 }
 
 /** Get a list of the valid neighbors of a pixel.*/
-std::vector<itk::Index<2> > Mask::GetValidNeighbors(const itk::Index<2>& pixel) const
+std::vector<itk::Index<2> > Mask::GetValid8Neighbors(const itk::Index<2>& pixel) const
 {
   return ITKHelpers::Get8NeighborsWithValue(pixel, this, HoleMaskPixelTypeEnum::VALID);
 }
 
-std::vector<itk::Index<2> > Mask::GetValidNeighborsInRegion(const itk::Index<2>& pixel, const itk::ImageRegion<2>& region) const
+std::vector<itk::Index<2> > Mask::GetValid8NeighborsInRegion(const itk::Index<2>& pixel, const itk::ImageRegion<2>& region) const
 {
   return ITKHelpers::Get8NeighborsInRegionWithValue(pixel, this, region,
                                                     HoleMaskPixelTypeEnum::VALID);
 }
 
-bool Mask::HasHoleNeighborInRegion(const itk::Index<2>& pixel,
+bool Mask::HasHole8NeighborInRegion(const itk::Index<2>& pixel,
                                    const itk::ImageRegion<2>& region) const
 {
   // Return true of there are more than 0 neighbors
-  return GetHoleNeighborsInRegion(pixel, region).size() > 0;
+  return GetHole8NeighborsInRegion(pixel, region).size() > 0;
 }
 
-bool Mask::HasHoleNeighbor(const itk::Index<2>& pixel) const
+bool Mask::HasHole8Neighbor(const itk::Index<2>& pixel) const
 {
   // Return true of there are more than 0 neighbors
-  return GetHoleNeighbors(pixel).size() > 0;
+  return GetHole8Neighbors(pixel).size() > 0;
 }
 
-bool Mask::HasValidNeighbor(const itk::Index<2>& pixel) const
+bool Mask::HasValid8Neighbor(const itk::Index<2>& pixel) const
 {
   // Return true of there are more than 0 neighbors
-  return GetValidNeighbors(pixel).size() > 0;
+  return GetValid8Neighbors(pixel).size() > 0;
 }
 
 /** Get a list of the hole neighbors of a pixel.*/
-std::vector<itk::Index<2> > Mask::GetHoleNeighbors(const itk::Index<2>& pixel) const
+std::vector<itk::Index<2> > Mask::GetHole8Neighbors(const itk::Index<2>& pixel) const
 {
   return ITKHelpers::Get8NeighborsWithValue(pixel, this, HoleMaskPixelTypeEnum::HOLE);
 }
 
-std::vector<itk::Index<2> > Mask::GetHoleNeighborsInRegion(const itk::Index<2>& pixel, const itk::ImageRegion<2>& region) const
+std::vector<itk::Index<2> > Mask::GetHole8NeighborsInRegion(const itk::Index<2>& pixel,
+                                                            const itk::ImageRegion<2>& region) const
 {
-  return ITKHelpers::Get8NeighborsInRegionWithValue(pixel, this, region, HoleMaskPixelTypeEnum::HOLE);
+  return ITKHelpers::Get8NeighborsInRegionWithValue(pixel, this, region,
+                                                    HoleMaskPixelTypeEnum::HOLE);
 }
 
-std::vector<itk::Offset<2> > Mask::GetValidNeighborOffsets(const itk::Index<2>& pixel) const
+std::vector<itk::Offset<2> > Mask::GetValid8NeighborOffsets(const itk::Index<2>& pixel) const
 {
   std::vector<itk::Index<2> > indices =
       ITKHelpers::Get8NeighborsWithValue(pixel, this, HoleMaskPixelTypeEnum::VALID);
-  std::vector<itk::Offset<2> > offsets;
-  for(unsigned int i = 0; i < indices.size(); ++i)
-  {
-    offsets.push_back(indices[i] - pixel);
-  }
+
+  std::vector<itk::Offset<2> > offsets = ITKHelpers::IndicesToOffsets(indices, pixel);
   return offsets;
 }
 
-std::vector<itk::Offset<2> > Mask::GetHoleNeighborOffsets(const itk::Index<2>& pixel) const
+std::vector<itk::Offset<2> > Mask::GetHole8NeighborOffsets(const itk::Index<2>& pixel) const
 {
   std::vector<itk::Index<2> > indices =
       ITKHelpers::Get8NeighborsWithValue(pixel, this, HoleMaskPixelTypeEnum::HOLE);
-  std::vector<itk::Offset<2> > offsets;
-  for(unsigned int i = 0; i < indices.size(); ++i)
-  {
-    offsets.push_back(indices[i] - pixel);
-  }
+
+  std::vector<itk::Offset<2> > offsets = ITKHelpers::IndicesToOffsets(indices, pixel);
+
   return offsets;
 }
 
@@ -593,18 +590,7 @@ void Mask::MarkAsValid(const itk::Index<2>& pixel)
 
 bool Mask::HasValid4Neighbor(const itk::Index<2>& pixel)
 {
-  std::vector<itk::Index<2> > neighbors =
-        ITKHelpers::Get4NeighborIndicesInsideRegion(pixel, this->GetLargestPossibleRegion());
-
-  for(unsigned int i = 0; i < neighbors.size(); ++i)
-  {
-    if(this->IsValid(neighbors[i]))
-    {
-      return true;
-    }
-  }
-
-  return false;
+  return ITKHelpers::Has4NeighborsWithValue(this, pixel, HoleMaskPixelTypeEnum::VALID);
 }
 
 std::vector<itk::Index<2> > Mask::GetValid4Neighbors(const itk::Index<2>& pixel)
@@ -627,7 +613,8 @@ void Mask::KeepLargestHole()
 
   ITKHelpers::WriteImage(connectedComponentFilter->GetOutput(), "ConnectedComponents.mha");
 
-  typedef itk::LabelShapeKeepNObjectsImageFilter<LabelImageType> LabelShapeKeepNObjectsImageFilterType;
+  typedef itk::LabelShapeKeepNObjectsImageFilter<LabelImageType>
+      LabelShapeKeepNObjectsImageFilterType;
   LabelShapeKeepNObjectsImageFilterType::Pointer labelShapeKeepNObjectsImageFilter =
            LabelShapeKeepNObjectsImageFilterType::New();
   labelShapeKeepNObjectsImageFilter->SetInput(connectedComponentFilter->GetOutput());
@@ -654,7 +641,8 @@ unsigned int Mask::CountValidPatches(const unsigned int patchRadius) const
   // std::cout << "CountValidPatches (patch radius " << patchRadius << ")..." << std::endl;
   while(!maskIterator.IsAtEnd())
   {
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(maskIterator.GetIndex(), patchRadius);
+    itk::ImageRegion<2> region =
+        ITKHelpers::GetRegionInRadiusAroundPixel(maskIterator.GetIndex(), patchRadius);
 
     if(this->IsValid(region))
     {
@@ -669,11 +657,13 @@ unsigned int Mask::CountValidPatches(const unsigned int patchRadius) const
 
 itk::ImageRegion<2> Mask::FindFirstValidPatch(const unsigned int patchRadius)
 {
-  itk::ImageRegionConstIteratorWithIndex<Mask> maskIterator(this, this->GetLargestPossibleRegion());
+  itk::ImageRegionConstIteratorWithIndex<Mask>
+      maskIterator(this, this->GetLargestPossibleRegion());
 
   while(!maskIterator.IsAtEnd())
   {
-    itk::ImageRegion<2> region = ITKHelpers::GetRegionInRadiusAroundPixel(maskIterator.GetIndex(), patchRadius);
+    itk::ImageRegion<2> region =
+        ITKHelpers::GetRegionInRadiusAroundPixel(maskIterator.GetIndex(), patchRadius);
 
     if(this->IsValid(region))
     {
