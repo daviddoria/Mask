@@ -32,16 +32,21 @@ set(Mask_libraries ${Mask_libraries} ${ITK_LIBRARIES})
 include_directories(${Mask_include_dirs})
 
 # Create the library
-add_library(Mask Mask.cpp MaskOperations.cpp)
+add_library(Mask Mask.cpp MaskOperations.cpp
+ForegroundBackgroundSegmentMask.cpp)
 target_link_libraries(Mask ${Mask_libraries})
 set(Mask_libraries ${Mask_libraries} Mask)
 
 # Add non-compiled sources to the project
-add_custom_target(MaskSources SOURCES Mask.h Mask.hpp
+add_custom_target(MaskSources SOURCES
+ForegroundBackgroundSegmentMask.h
+Mask.h
+Mask.hpp
 MaskQt.h
 MaskVTK.h
 MaskVTK.hpp
-MaskOperations.hpp)
+MaskOperations.hpp
+SegmentMask.h)
 
 # Only build the MaskQt library if the user wants it
 option(Mask_BuildMaskQt "Build MaskQt?")

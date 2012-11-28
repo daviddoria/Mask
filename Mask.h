@@ -57,7 +57,7 @@ struct HolePixelValueWrapper
 };
 
 /** This class forces us to pass functions values as ValidValueWrapper(0) instead of just "0"
-  * so that we can be sure that a value value is getting passed where a value value is expected,
+  * so that we can be sure that a valid value is getting passed where a valid value is expected,
   * and not accidentally confuse the order of hole/valid arguments silently. */
 template <typename T>
 struct ValidPixelValueWrapper
