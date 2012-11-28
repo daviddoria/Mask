@@ -239,26 +239,11 @@ std::vector<itk::Index<2> > Mask::GetValidPixels(const bool forward) const
 std::vector<itk::Index<2> > Mask::GetValidPixelsInRegion(itk::ImageRegion<2> region,
                                                          const bool forward) const
 {
+  // Ensure the region is inside the image
   region.Crop(this->GetLargestPossibleRegion());
 
-  std::vector<itk::Index<2> > validPixels;
-
-  itk::ImageRegionConstIterator<Mask> iterator(this, region);
-
-  while(!iterator.IsAtEnd())
-  {
-    //    if(this->IsValid(iterator.GetIndex()))
-    //      {
-    //      validPixels.push_back(iterator.GetIndex());
-    //      }
-
-    if(iterator.Get() == HoleMaskPixelTypeEnum::VALID)
-    {
-      validPixels.push_back(iterator.GetIndex());
-    }
-
-    ++iterator;
-  }
+  std::vector<itk::Index<2> > validPixels =
+      ITKHelpers::GetPixelsWithValueInRegion(this, region, HoleMaskPixelTypeEnum::VALID);
 
   if(!forward)
   {
@@ -270,25 +255,12 @@ std::vector<itk::Index<2> > Mask::GetValidPixelsInRegion(itk::ImageRegion<2> reg
 
 std::vector<itk::Index<2> > Mask::GetHolePixelsInRegion(itk::ImageRegion<2> region) const
 {
+  // Ensure the region is inside the image
   region.Crop(this->GetLargestPossibleRegion());
 
-  std::vector<itk::Index<2> > holePixels;
+  std::vector<itk::Index<2> > holePixels =
+      ITKHelpers::GetPixelsWithValueInRegion(this, region, HoleMaskPixelTypeEnum::HOLE);
 
-  itk::ImageRegionConstIterator<Mask> iterator(this, region);
-
-  while(!iterator.IsAtEnd())
-  {
-    // Don't do this, because it loses the coherency of using an iterator.
-    //    if(this->IsHole(iterator.GetIndex()))
-    //      {
-    //      holePixels.push_back(iterator.GetIndex());
-    //      }
-    if(iterator.Get() == HoleMaskPixelTypeEnum::HOLE)
-    {
-      holePixels.push_back(iterator.GetIndex());
-    }
-    ++iterator;
-  }
   return holePixels;
 }
 
@@ -440,30 +412,30 @@ void Mask::ShrinkHole(const unsigned int kernelRadius)
 }
 
 void Mask::CreateImage(UnsignedCharImageType* const image, const unsigned char holeColor,
-                            const unsigned char validColor, const unsigned char otherColor)
+                       const unsigned char validColor, const unsigned char undeterminedColor)
 {
   image->SetRegions(this->GetLargestPossibleRegion());
   image->Allocate();
 
-  itk::ImageRegionIterator<UnsignedCharImageType> binaryImageIterator(image,
-                                                                      image->GetLargestPossibleRegion());
+  itk::ImageRegionIterator<UnsignedCharImageType>
+      binaryImageIterator(image, image->GetLargestPossibleRegion());
 
   while(!binaryImageIterator.IsAtEnd())
-    {
+  {
     if(this->IsHole(binaryImageIterator.GetIndex()))
-      {
+    {
       binaryImageIterator.Set(holeColor);
-      }
-    else if(this->IsValid(binaryImageIterator.GetIndex()))
-      {
-      binaryImageIterator.Set(validColor);
-      }
-    else
-      {
-      binaryImageIterator.Set(otherColor);
-      }
-    ++binaryImageIterator;
     }
+    else if(this->IsValid(binaryImageIterator.GetIndex()))
+    {
+      binaryImageIterator.Set(validColor);
+    }
+    else
+    {
+      binaryImageIterator.Set(undeterminedColor);
+    }
+    ++binaryImageIterator;
+  }
 }
 
 void Mask::CreateBinaryImage(UnsignedCharImageType* const image, const unsigned char holeColor,
@@ -540,7 +512,7 @@ void Mask::CreateBoundaryImage(itk::Image<unsigned char, 2>* const boundaryImage
                                const BoundaryImageType::PixelType& outputBoundaryPixelValue) const
 {
   CreateBoundaryImageInRegion(this->GetLargestPossibleRegion(), boundaryImage,
-                       whichSideOfBoundary, outputBoundaryPixelValue);
+                              whichSideOfBoundary, outputBoundaryPixelValue);
 }
 
 /** Get a list of the valid neighbors of a pixel.*/
@@ -551,10 +523,12 @@ std::vector<itk::Index<2> > Mask::GetValidNeighbors(const itk::Index<2>& pixel) 
 
 std::vector<itk::Index<2> > Mask::GetValidNeighborsInRegion(const itk::Index<2>& pixel, const itk::ImageRegion<2>& region) const
 {
-  return ITKHelpers::Get8NeighborsInRegionWithValue(pixel, this, region, HoleMaskPixelTypeEnum::VALID);
+  return ITKHelpers::Get8NeighborsInRegionWithValue(pixel, this, region,
+                                                    HoleMaskPixelTypeEnum::VALID);
 }
 
-bool Mask::HasHoleNeighborInRegion(const itk::Index<2>& pixel, const itk::ImageRegion<2>& region) const
+bool Mask::HasHoleNeighborInRegion(const itk::Index<2>& pixel,
+                                   const itk::ImageRegion<2>& region) const
 {
   // Return true of there are more than 0 neighbors
   return GetHoleNeighborsInRegion(pixel, region).size() > 0;
@@ -635,20 +609,7 @@ bool Mask::HasValid4Neighbor(const itk::Index<2>& pixel)
 
 std::vector<itk::Index<2> > Mask::GetValid4Neighbors(const itk::Index<2>& pixel)
 {
-  std::vector<itk::Index<2> > neighborhood =
-          ITKHelpers::Get4NeighborIndicesInsideRegion(pixel, this->GetLargestPossibleRegion());
-
-  std::vector<itk::Index<2> > validNeighbors;
-
-  for(unsigned int i = 0; i < neighborhood.size(); ++i)
-    {
-    if(this->IsValid(neighborhood[i]))
-      {
-      validNeighbors.push_back(neighborhood[i]);
-      }
-    }
-
-  return validNeighbors;
+  return ITKHelpers::Get4NeighborsWithValue(this, pixel, HoleMaskPixelTypeEnum::VALID);
 }
 
 void Mask::KeepLargestHole()

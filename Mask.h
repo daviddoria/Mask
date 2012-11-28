@@ -128,8 +128,10 @@ public:
   typedef itk::Image<unsigned char, 2> UnsignedCharImageType;
   void CreateBinaryImage(UnsignedCharImageType* const image, const unsigned char holeColor,
                          const unsigned char validColor);
+
+  /** Create an image of holes, valid pixels, and undetermined pixels.*/
   void CreateImage(UnsignedCharImageType* const image, const unsigned char holeColor,
-                         const unsigned char validColor, const unsigned char otherColor);
+                   const unsigned char validColor, const unsigned char undeterminedColor);
 
   /** Invert the mask by setting all hole pixels to ValidValue and all valid pixels to HoleValue.*/
   void InvertData();
@@ -316,7 +318,7 @@ public:
   /** Count valid pixels in the whole mask.*/
   unsigned int CountValidPixels() const;
 
-  /** Read the mask from a file.*/
+  /** Read the mask from a .mask file.*/
   void Read(const std::string& filename);
 
   /** Read the mask from an image file.*/
