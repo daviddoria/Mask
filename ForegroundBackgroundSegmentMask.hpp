@@ -17,18 +17,18 @@
  *=========================================================================*/
 
 #ifndef ForegroundBackgroundSegmentMask_HPP
-#ifndef ForegroundBackgroundSegmentMask_HPP
+#define ForegroundBackgroundSegmentMask_HPP
 
 #include "ForegroundBackgroundSegmentMask.h"
 
 // Submodules
 #include <ITKHelpers/ITKHelpers.h>
 
-
 template <typename TPixel>
-void Mask::ReadFromImage(const std::string& filename,
-                         const ForegroundPixelValueWrapper<TPixel>& foregroundValue,
-                         const BackgroundPixelValueWrapper<TPixel>& backgroundValue)
+void ForegroundBackgroundSegmentMask::
+ReadFromImage(const std::string& filename,
+              const ForegroundPixelValueWrapper<TPixel>& foregroundValue,
+              const BackgroundPixelValueWrapper<TPixel>& backgroundValue)
 {
   std::cout << "Reading mask from image: " << filename << std::endl;
 
@@ -52,10 +52,30 @@ void Mask::ReadFromImage(const std::string& filename,
   imageReader->SetFileName(filename);
   imageReader->Update();
 
-  CreateHolesFromValue(imageReader->GetOutput(),
-                       static_cast<ReadPixelType>(holeValue.Value));
-  CreateValidPixelsFromValue(imageReader->GetOutput(),
-                             static_cast<ReadPixelType>(validValue.Value));
+  itk::ImageRegionConstIteratorWithIndex<ImageType>
+      imageIterator(imageReader->GetOutput(),
+                    imageReader->GetOutput()->GetLargestPossibleRegion());
+  while(!imageIterator.IsAtEnd())
+  {
+    if(imageIterator.Get() == foregroundValue.Value)
+    {
+      this->SetPixel(imageIterator.GetIndex(),
+                     ForegroundBackgroundSegmentMaskPixelTypeEnum::FOREGROUND);
+    }
+    else if(imageIterator.Get() == foregroundValue.Value)
+    {
+      this->SetPixel(imageIterator.GetIndex(),
+                     ForegroundBackgroundSegmentMaskPixelTypeEnum::FOREGROUND);
+    }
+    else
+    {
+      std::cerr << "Warning: Pixels with values other than the specified foreground "
+                   "and background values exist in the image and are being ignored." << std::endl;
+
+    }
+    ++imageIterator;
+  }
+
 }
 
 #endif

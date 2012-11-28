@@ -136,4 +136,6 @@ private:
   ForegroundBackgroundSegmentMask(){}
 };
 
+#include "ForegroundBackgroundSegmentMask.hpp"
+
 #endif

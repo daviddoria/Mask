@@ -46,7 +46,8 @@ MaskQt.h
 MaskVTK.h
 MaskVTK.hpp
 MaskOperations.hpp
-SegmentMask.h)
+#SegmentMask.h
+)
 
 # Only build the MaskQt library if the user wants it
 option(Mask_BuildMaskQt "Build MaskQt?")
