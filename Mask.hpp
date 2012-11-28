@@ -209,7 +209,8 @@ void Mask::CreateValidPixelsFromValue(const TImage* const inputImage,
 }
 
 template <typename TPixel>
-void Mask::ReadFromImage(const std::string& filename, const HolePixelValueWrapper<TPixel>& holeValue,
+void Mask::ReadFromImage(const std::string& filename,
+                         const HolePixelValueWrapper<TPixel>& holeValue,
                          const ValidPixelValueWrapper<TPixel>& validValue)
 {
   std::cout << "Reading mask from image: " << filename << std::endl;
@@ -233,6 +234,9 @@ void Mask::ReadFromImage(const std::string& filename, const HolePixelValueWrappe
   ImageReaderType::Pointer imageReader = ImageReaderType::New();
   imageReader->SetFileName(filename);
   imageReader->Update();
+
+  this->SetRegions(imageReader->GetOutput()->GetLargestPossibleRegion());
+  this->Allocate();
 
   CreateHolesFromValue(imageReader->GetOutput(),
                        static_cast<ReadPixelType>(holeValue.Value));

@@ -1,0 +1,3 @@
+hole 0
+valid 255
+TestMask.png

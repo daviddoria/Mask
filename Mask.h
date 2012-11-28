@@ -337,8 +337,7 @@ private:
   Mask(const Self &);    //purposely not implemented
   void operator=(const Self &); //purposely not implemented
 
-  /** Constructor. */
-  Mask();
+  Mask(){} // required by itkNewMacro
 };
 
 #include "Mask.hpp"

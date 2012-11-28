@@ -40,6 +40,7 @@ set(Mask_libraries ${Mask_libraries} Mask)
 # Add non-compiled sources to the project
 add_custom_target(MaskSources SOURCES
 ForegroundBackgroundSegmentMask.h
+ForegroundBackgroundSegmentMask.hpp
 Mask.h
 Mask.hpp
 MaskQt.h

@@ -132,8 +132,7 @@ private:
   ForegroundBackgroundSegmentMask(const Self &);    //purposely not implemented
   void operator=(const Self &); //purposely not implemented
 
-  /** Constructor. */
-  ForegroundBackgroundSegmentMask(){}
+  ForegroundBackgroundSegmentMask(){} // required by itkNewMacro
 };
 
 #include "ForegroundBackgroundSegmentMask.hpp"

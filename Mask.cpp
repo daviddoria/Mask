@@ -33,13 +33,23 @@
 #include "itkLabelShapeKeepNObjectsImageFilter.h"
 #include "itkRescaleIntensityImageFilter.h"
 
-Mask::Mask()
-{
-
-}
-
 void Mask::Read(const std::string& filename)
 {
+  /**
+   * The format of the .mask file is:
+   * hole 0
+   * valid 255
+   * Mask.png
+   *
+   * OR
+   *
+   * valid 255
+   * hole 0
+   * Mask.png
+   *
+   * That is, the "valid VALUE" line can be either on the first or second line.
+   * Note that the 0 and 255 here are arbitrary and can be anything.
+   */
   std::string extension = Helpers::GetFileExtension(filename);
   if(extension != "mask")
   {
@@ -59,37 +69,69 @@ void Mask::Read(const std::string& filename)
 
   std::string line;
   std::stringstream linestream;
-
   int holeValue;
   int validValue;
 
-  std::string imageFileName;
-  getline(fin, line);
+  std::string type1;
+  std::string type2;
+  int value1;
+  int value2;
 
+  getline(fin, line);
   linestream.clear();
   linestream << line;
+  linestream >> type1 >> value1;
 
-  linestream >> holeValue;
-  linestream >> validValue;
-  linestream >> imageFileName;
+  if(type1 == "hole")
+  {
+    holeValue = value1;
+  }
+  else if(type1 == "valid")
+  {
+    validValue = value1;
+  }
+  else
+  {
+    throw std::runtime_error("Invalid .mask file!");
+  }
+
+  getline(fin, line);
+  linestream.clear();
+  linestream << line;
+  linestream >> type2 >> value2;
+
+  if(type1 == type2)
+  {
+    throw std::runtime_error("Invalid .mask file! Valid or hole value listed twice!");
+  }
+
+  if(type2 == "hole")
+  {
+    holeValue = value2;
+  }
+  else if(type2 == "valid")
+  {
+    validValue = value2;
+  }
+  else
+  {
+    throw std::runtime_error("Invalid .mask file!");
+  }
+
+  std::string imageFileName;
+//  linestream >> imageFileName;
+  getline(fin, imageFileName);
+  std::cout << "Mask image file: " << imageFileName << std::endl;
 
   std::string path = Helpers::GetPath(filename);
 
-//  std::cout << "Reading mask: HoleValue " << static_cast<int>(this->HoleValue)
-//            << " ValidValue: " << static_cast<int>(this->ValidValue) << std::endl;
-
   std::string fullImageFileName = path + imageFileName;
 
-//  itk::ImageIOBase::IOComponentType componentType =
-//      ITKHelpers::GetPixelTypeFromFile(fullImageFileName);
-
-//  CreateFromImage(fullImageFileName, HolePixelValueWrapper<itk::ImageIOBase::IOComponentType>(holeValue),
-//                  ValidPixelValueWrapper<itk::ImageIOBase::IOComponentType>(validValue));
+  std::cout << "Full mask image file: " << fullImageFileName << std::endl;
 
   ReadFromImage(fullImageFileName, HolePixelValueWrapper<int>(holeValue),
                 ValidPixelValueWrapper<int>(validValue));
 }
-
 
 unsigned int Mask::CountBoundaryPixels(const itk::ImageRegion<2>& region,
                                        const Mask::PixelType& whichSideOfBoundary) const
