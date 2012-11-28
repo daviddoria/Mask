@@ -68,12 +68,12 @@ template<typename TImage>
 void Mask::ApplyToImage(TImage* const image, const typename TImage::PixelType& color) const
 {
   if(image->GetLargestPossibleRegion() != this->GetLargestPossibleRegion())
-    {
+  {
     std::cerr << "Image and mask must be the same size!" << std::endl
               << "Image region: " << image->GetLargestPossibleRegion() << std::endl
               << "Mask region: " << this->GetLargestPossibleRegion() << std::endl;
     return;
-    }
+  }
   ApplyRegionToImageRegion(this->GetLargestPossibleRegion(), image, image->GetLargestPossibleRegion(), color);
 }
 
@@ -93,39 +93,39 @@ void Mask::ApplyRegionToImageRegion(const itk::ImageRegion<2>& maskRegion, TImag
   itk::ImageRegionIterator<TImage> imageIterator(image, imageRegion);
 
   while(!maskIterator.IsAtEnd())
-    {
+  {
     if(this->IsHole(maskIterator.GetIndex()))
-      {
+    {
       imageIterator.Set(color);
-      }
+    }
 
     ++maskIterator;
     ++imageIterator;
-    }
+  }
 }
 
 template<typename TImage>
 void Mask::ApplyToScalarImage(TImage* const image, typename TImage::PixelType holeValue) const
 {
   if(image->GetLargestPossibleRegion() != this->GetLargestPossibleRegion())
-    {
+  {
     std::cerr << "Image and mask must be the same size!" << std::endl
               << "Image region: " << image->GetLargestPossibleRegion() << std::endl
               << "Mask region: " << this->GetLargestPossibleRegion() << std::endl;
     return;
-    }
+  }
 
   itk::ImageRegionConstIterator<Mask> maskIterator(this, this->GetLargestPossibleRegion());
 
   while(!maskIterator.IsAtEnd())
-    {
+  {
     if(this->IsHole(maskIterator.GetIndex()))
-      {
+    {
       image->SetPixel(maskIterator.GetIndex(), holeValue);
-      }
+    }
 
     ++maskIterator;
-    }
+  }
 }
 
 template<typename TImage>
@@ -190,7 +190,7 @@ void Mask::CreateHolesFromValue(const TImage* const inputImage,
 
 template <typename TImage>
 void Mask::CreateValidPixelsFromValue(const TImage* const inputImage,
-                                    const typename TImage::PixelType value)
+                                      const typename TImage::PixelType value)
 {
   assert(inputImage->GetLargestPossibleRegion() == this->GetLargestPossibleRegion());
 

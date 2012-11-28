@@ -91,7 +91,8 @@ void Mask::Read(const std::string& filename)
 }
 
 
-unsigned int Mask::CountBoundaryPixels(const itk::ImageRegion<2>& region, const Mask::PixelType& whichSideOfBoundary) const
+unsigned int Mask::CountBoundaryPixels(const itk::ImageRegion<2>& region,
+                                       const Mask::PixelType& whichSideOfBoundary) const
 {
   return FindBoundaryPixelsInRegion(region, whichSideOfBoundary).size();
 }
@@ -102,7 +103,8 @@ unsigned int Mask::CountBoundaryPixels(const Mask::PixelType& whichSideOfBoundar
 }
 
 /** Find hole pixels that are touching valid pixels.*/
-std::vector<itk::Index<2> > Mask::FindBoundaryPixelsInRegion(const itk::ImageRegion<2>& region, const Mask::PixelType& whichSideOfBoundary) const
+std::vector<itk::Index<2> > Mask::FindBoundaryPixelsInRegion(const itk::ImageRegion<2>& region,
+                                                             const Mask::PixelType& whichSideOfBoundary) const
 {
   std::vector<itk::Index<2> > boundaryPixels;
 
@@ -110,11 +112,10 @@ std::vector<itk::Index<2> > Mask::FindBoundaryPixelsInRegion(const itk::ImageReg
 
   while(!maskIterator.IsAtEnd())
   {
-    //if(this->IsHole(maskIterator.GetIndex())) // This was assuming which side the boundary we wanted to find
     if(maskIterator.Get() == whichSideOfBoundary)
     {
-//      if(this->HasValidNeighbor(maskIterator.GetIndex())) // This was assuming we were visiting hole pixels
-      if(ITKHelpers::HasNeighborWithValueOtherThan(maskIterator.GetIndex(), this, whichSideOfBoundary))
+      if(ITKHelpers::HasNeighborWithValueOtherThan(maskIterator.GetIndex(), this,
+                                                   whichSideOfBoundary))
       {
         boundaryPixels.push_back(maskIterator.GetIndex());
       }
@@ -192,42 +193,29 @@ unsigned int Mask::CountValidPixels() const
 
 std::vector<itk::Offset<2> > Mask::GetValidOffsetsInRegion(itk::ImageRegion<2> region) const
 {
+  // Ensure the region is inside the image
   region.Crop(this->GetLargestPossibleRegion());
 
-  std::vector<itk::Offset<2> > validOffsets;
+  std::vector<itk::Index<2> > indices =
+      ITKHelpers::GetPixelsWithValueInRegion(this, region, HoleMaskPixelTypeEnum::VALID);
 
-  itk::ImageRegionConstIterator<Mask> iterator(this, region);
+  std::vector<itk::Offset<2> > validOffsets =
+      ITKHelpers::IndicesToOffsets(indices, region.GetIndex());
 
-  while(!iterator.IsAtEnd())
-  {
-    //if(this->IsValid(iterator.GetIndex()))
-    if(iterator.Get() == HoleMaskPixelTypeEnum::VALID)
-    {
-      validOffsets.push_back(iterator.GetIndex() - region.GetIndex());
-    }
-
-    ++iterator;
-  }
   return validOffsets;
 }
 
 std::vector<itk::Offset<2> > Mask::GetHoleOffsetsInRegion(itk::ImageRegion<2> region) const
 {
+  // Ensure the region is inside the image
   region.Crop(this->GetLargestPossibleRegion());
 
-  std::vector<itk::Offset<2> > holeOffsets;
+  std::vector<itk::Index<2> > indices =
+      ITKHelpers::GetPixelsWithValueInRegion(this, region, HoleMaskPixelTypeEnum::HOLE);
 
-  itk::ImageRegionConstIterator<Mask> iterator(this, region);
+  std::vector<itk::Offset<2> > holeOffsets =
+      ITKHelpers::IndicesToOffsets(indices, region.GetIndex());
 
-  while(!iterator.IsAtEnd())
-  {
-    if(iterator.Get() == HoleMaskPixelTypeEnum::HOLE)
-    {
-      holeOffsets.push_back(iterator.GetIndex() - region.GetIndex());
-    }
-
-    ++iterator;
-  }
   return holeOffsets;
 }
 
@@ -674,10 +662,6 @@ itk::ImageRegion<2> Mask::FindFirstValidPatch(const unsigned int patchRadius)
   }
 
   throw std::runtime_error("No valid patches found!");
-
-  // We should never reach this point
-  itk::ImageRegion<2> dummyRegion;
-  return dummyRegion;
 }
 
 void Mask::SetHole(const itk::Index<2>& index)
@@ -692,13 +676,7 @@ void Mask::SetValid(const itk::Index<2>& index)
 
 void Mask::SetValid(const itk::ImageRegion<2>& region)
 {
-  itk::ImageRegionIteratorWithIndex<Mask> maskIterator(this, region);
-
-  while(!maskIterator.IsAtEnd())
-  {
-    maskIterator.Set(HoleMaskPixelTypeEnum::VALID);
-    ++maskIterator;
-  }
+  ITKHelpers::SetRegionToConstant(this, region, HoleMaskPixelTypeEnum::VALID);
 }
 
 std::ostream& operator<<(std::ostream& output, const HoleMaskPixelTypeEnum &pixelType)
