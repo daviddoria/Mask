@@ -5,14 +5,10 @@
 
 static bool TestFindBoundaryInRegion();
 
-static bool TestRead();
-
 int main()
 {
   bool allPass = true;
   allPass &= TestFindBoundaryInRegion();
-
-  allPass &= TestRead();
 
   if(allPass)
   {
@@ -115,16 +111,4 @@ bool TestFindBoundaryInRegion()
 //  return true;
 
   return false;
-}
-
-bool TestRead()
-{
-  Mask::Pointer mask = Mask::New();
-  mask->Read("/media/portable/Projects/ImageGraphCutSegmentation/Mask/Tests/data/TestMask.mask");
-  unsigned int numberOfHoles = ITKHelpers::CountPixelsWithValue(mask.GetPointer(), HoleMaskPixelTypeEnum::HOLE);
-  unsigned int numberOfValid = ITKHelpers::CountPixelsWithValue(mask.GetPointer(), HoleMaskPixelTypeEnum::VALID);
-
-  std::cout << "numberOfHoles: " << numberOfHoles << " numberOfValid: " << numberOfValid << std::endl;
-
-  return true;
 }

@@ -52,6 +52,9 @@ ReadFromImage(const std::string& filename,
   imageReader->SetFileName(filename);
   imageReader->Update();
 
+  this->SetRegions(imageReader->GetOutput()->GetLargestPossibleRegion());
+  this->Allocate();
+
   itk::ImageRegionConstIteratorWithIndex<ImageType>
       imageIterator(imageReader->GetOutput(),
                     imageReader->GetOutput()->GetLargestPossibleRegion());
@@ -62,15 +65,17 @@ ReadFromImage(const std::string& filename,
       this->SetPixel(imageIterator.GetIndex(),
                      ForegroundBackgroundSegmentMaskPixelTypeEnum::FOREGROUND);
     }
-    else if(imageIterator.Get() == foregroundValue.Value)
+    else if(imageIterator.Get() == backgroundValue.Value)
     {
       this->SetPixel(imageIterator.GetIndex(),
-                     ForegroundBackgroundSegmentMaskPixelTypeEnum::FOREGROUND);
+                     ForegroundBackgroundSegmentMaskPixelTypeEnum::BACKGROUND);
     }
     else
     {
-      std::cerr << "Warning: Pixels with values other than the specified foreground "
-                   "and background values exist in the image and are being ignored." << std::endl;
+      std::cerr << "Warning: Pixels with value " << imageIterator.Get()
+                << " found and is being ignored." << std::endl;
+//      std::cerr << "Warning: Pixels with values other than the specified foreground "
+//                   "and background values exist in the image and are being ignored." << std::endl;
 
     }
     ++imageIterator;

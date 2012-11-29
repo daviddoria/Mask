@@ -127,6 +127,12 @@ public:
   /** Read the mask from a .mask file.*/
   void Read(const std::string& filename);
 
+  /** Count foreground pixels in the whole mask.*/
+  unsigned int CountForegroundPixels() const;
+
+  /** Count background pixels in the whole mask.*/
+  unsigned int CountBackgroundPixels() const;
+
 private:
 
   ForegroundBackgroundSegmentMask(const Self &);    //purposely not implemented

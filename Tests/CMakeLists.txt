@@ -10,3 +10,12 @@ add_test(TestMask TestMask)
 add_executable(TestMaskOperations TestMaskOperations.cpp)
 target_link_libraries(TestMaskOperations ${Mask_libraries})
 add_test(TestMaskOperations TestMaskOperations)
+
+add_executable(TestMaskRead TestMaskRead.cpp)
+target_link_libraries(TestMaskRead ${Mask_libraries})
+add_test(TestMaskRead TestMaskRead ${CMAKE_SOURCE_DIR}/Tests/data/TestMask.mask)
+
+add_executable(TestForegroundBackgroundSegmentMaskRead TestForegroundBackgroundSegmentMaskRead.cpp)
+target_link_libraries(TestForegroundBackgroundSegmentMaskRead ${Mask_libraries})
+add_test(TestForegroundBackgroundSegmentMaskRead TestForegroundBackgroundSegmentMaskRead
+         ${CMAKE_SOURCE_DIR}/Tests/data/TestMask.fbmask)

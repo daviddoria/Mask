@@ -40,10 +40,10 @@ void ForegroundBackgroundSegmentMask::Read(const std::string& filename)
    * Note that the 0 and 255 here are arbitrary and can be anything.
    */
   std::string extension = Helpers::GetFileExtension(filename);
-  if(extension != "mask")
+  if(extension != "fbmask")
   {
     std::stringstream ss;
-    ss << "Cannot read any file except .fbmask! Specified file was ." << extension
+    ss << "Cannot read files with extension other than .fbmask! Specified file had extension ." << extension
        << " You might want ReadFromImage instead.";
     throw std::runtime_error(ss.str());
   }
@@ -107,8 +107,16 @@ void ForegroundBackgroundSegmentMask::Read(const std::string& filename)
     throw std::runtime_error("Invalid .fbmask file!");
   }
 
+  std::cout << "foregroundValue: " << foregroundValue
+            << " backgroundValue: " << backgroundValue << std::endl;
+
   std::string imageFileName;
-  linestream >> imageFileName;
+  getline(fin, imageFileName);
+
+  if(imageFileName.length() == 0)
+  {
+    throw std::runtime_error("Image file name was empty!");
+  }
 
   std::string path = Helpers::GetPath(filename);
 
@@ -137,6 +145,23 @@ bool ForegroundBackgroundSegmentMask::IsBackground(const itk::Index<2>& index) c
   return false;
 }
 
+unsigned int ForegroundBackgroundSegmentMask::CountForegroundPixels() const
+{
+  std::vector<itk::Index<2> > foregroundPixels =
+      ITKHelpers::GetPixelsWithValueInRegion(this, this->GetLargestPossibleRegion(),
+                                             ForegroundBackgroundSegmentMaskPixelTypeEnum::FOREGROUND);
+
+  return foregroundPixels.size();
+}
+
+unsigned int ForegroundBackgroundSegmentMask::CountBackgroundPixels() const
+{
+  std::vector<itk::Index<2> > backgroundPixels =
+      ITKHelpers::GetPixelsWithValueInRegion(this, this->GetLargestPossibleRegion(),
+                                             ForegroundBackgroundSegmentMaskPixelTypeEnum::BACKGROUND);
+
+  return backgroundPixels.size();
+}
 
 std::ostream& operator<<(std::ostream& output,
                          const ForegroundBackgroundSegmentMaskPixelTypeEnum &pixelType)
