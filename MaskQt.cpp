@@ -71,8 +71,7 @@ QImage GetQtImage(const Mask* const mask, const itk::ImageRegion<2>& region)
     ++imageIterator;
   }
 
-  //return qimage; // The actual image region
-  return qimage.mirrored(false, true); // The flipped image region
+  return qimage; // The actual image region
 }
 
 } // end namespace
