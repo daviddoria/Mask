@@ -43,8 +43,8 @@ QImage GetQtImage(const Mask* const mask, const itk::ImageRegion<2>& region)
   regionOfInterestImageFilter->SetInput(mask);
   regionOfInterestImageFilter->Update();
 
-  itk::ImageRegionIterator<Mask> imageIterator(regionOfInterestImageFilter->GetOutput(),
-                                               regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
+  itk::ImageRegionConstIterator<Mask> imageIterator(regionOfInterestImageFilter->GetOutput(),
+                                                    regionOfInterestImageFilter->GetOutput()->GetLargestPossibleRegion());
 
   while(!imageIterator.IsAtEnd())
   {
@@ -72,6 +72,33 @@ QImage GetQtImage(const Mask* const mask, const itk::ImageRegion<2>& region)
   }
 
   return qimage; // The actual image region
+}
+
+QImage SetPixelsToTransparent(QImage image, const Mask* const mask,
+                              HoleMaskPixelTypeEnum pixelValue)
+{
+  itk::ImageRegionConstIteratorWithIndex<Mask>
+      maskIterator(mask, mask->GetLargestPossibleRegion());
+
+  while(!maskIterator.IsAtEnd())
+  {
+    itk::Index<2> index = maskIterator.GetIndex();
+
+    int alpha = 255; // opaque
+    if(maskIterator.Get() == pixelValue)
+    {
+      alpha = 0; // transparent
+    }
+
+    QColor pixelColor = image.pixel(index[0], index[1]);
+    pixelColor.setAlpha(alpha);
+
+    image.setPixel(index[0], index[1], pixelColor.rgba());
+
+    ++maskIterator;
+  }
+
+  return image;
 }
 
 } // end namespace
