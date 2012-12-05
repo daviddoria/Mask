@@ -124,6 +124,10 @@ public:
   void ReadFromImage(const std::string& filename, const ForegroundPixelValueWrapper<TPixel>& foregroundValue,
                      const BackgroundPixelValueWrapper<TPixel>& backgroundValue);
 
+  template <typename TPixel>
+  void Write(const std::string& filename, const ForegroundPixelValueWrapper<TPixel>& foregroundValue,
+             const BackgroundPixelValueWrapper<TPixel>& backgroundValue);
+
   /** Read the mask from a .mask file.*/
   void Read(const std::string& filename);
 
