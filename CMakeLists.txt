@@ -33,7 +33,8 @@ include_directories(${Mask_include_dirs})
 
 # Create the library
 add_library(Mask Mask.cpp MaskOperations.cpp
-ForegroundBackgroundSegmentMask.cpp)
+ForegroundBackgroundSegmentMask.cpp
+StrokeMask.cpp)
 target_link_libraries(Mask ${Mask_libraries})
 set(Mask_libraries ${Mask_libraries} Mask)
 
@@ -43,6 +44,8 @@ ForegroundBackgroundSegmentMask.h
 ForegroundBackgroundSegmentMask.hpp
 Mask.h
 Mask.hpp
+StrokeMask.h
+StrokeMask.hpp
 MaskQt.h
 MaskVTK.h
 MaskVTK.hpp
