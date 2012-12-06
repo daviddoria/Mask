@@ -58,13 +58,13 @@ void ForegroundBackgroundSegmentMask::Read(const std::string& filename)
 
   std::string line;
   std::stringstream linestream;
-  int foregroundValue;
-  int backgroundValue;
+  int foregroundValue = 0;
+  int backgroundValue = 0;
 
   std::string type1;
   std::string type2;
-  int value1;
-  int value2;
+  int value1 = 0;
+  int value2 = 0;
 
   getline(fin, line);
   linestream.clear();
@@ -107,7 +107,8 @@ void ForegroundBackgroundSegmentMask::Read(const std::string& filename)
     throw std::runtime_error("Invalid .fbmask file!");
   }
 
-  std::cout << "foregroundValue: " << foregroundValue
+  std::cout << "ForegroundBackgroundSegmentMask read from " << filename << ": "
+            << "foregroundValue: " << foregroundValue
             << " backgroundValue: " << backgroundValue << std::endl;
 
   std::string imageFileName;

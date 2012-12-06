@@ -46,14 +46,14 @@ std::ostream& operator<<(std::ostream& output, const HoleMaskPixelTypeEnum &pixe
 template <typename T>
 struct HolePixelValueWrapper
 {
-  HolePixelValueWrapper(T value) : Value(value){}
+  HolePixelValueWrapper(const T value) : Value(value){}
 
   operator T()
   {
     return this->Value;
   }
 
-  T Value;
+  T Value = 0;
 };
 
 /** This class forces us to pass functions values as ValidValueWrapper(0) instead of just "0"
@@ -62,14 +62,14 @@ struct HolePixelValueWrapper
 template <typename T>
 struct ValidPixelValueWrapper
 {
-  ValidPixelValueWrapper(T value) : Value(value){}
+  ValidPixelValueWrapper(const T value) : Value(value){}
 
   operator T()
   {
     return this->Value;
   }
 
-  T Value;
+  T Value = 0;
 };
 
 class Mask : public itk::Image<HoleMaskPixelTypeEnum, 2>

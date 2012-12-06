@@ -69,13 +69,13 @@ void Mask::Read(const std::string& filename)
 
   std::string line;
   std::stringstream linestream;
-  int holeValue;
-  int validValue;
+  int holeValue = 0;
+  int validValue = 0;
 
   std::string type1;
   std::string type2;
-  int value1;
-  int value2;
+  int value1 = 0;
+  int value2 = 0;
 
   getline(fin, line);
   linestream.clear();
