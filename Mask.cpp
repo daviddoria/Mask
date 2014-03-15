@@ -33,6 +33,55 @@
 #include "itkLabelShapeKeepNObjectsImageFilter.h"
 #include "itkRescaleIntensityImageFilter.h"
 
+std::string Mask::GetFilenameFromMaskFile(const std::string& maskFileName)
+{
+  // Currently this is massive duplication between this function and Read().
+  // We should change Read to take advantage of a function to similar to this.
+  /**
+   * The format of the .mask file is:
+   * hole 0
+   * valid 255
+   * Mask.png
+   *
+   * OR
+   *
+   * valid 255
+   * hole 0
+   * Mask.png
+   *
+   * That is, the "valid VALUE" line can be either on the first or second line.
+   * Note that the 0 and 255 here are arbitrary and can be anything.
+   */
+  std::string extension = Helpers::GetFileExtension(maskFileName);
+  if(extension != "mask")
+  {
+    std::stringstream ss;
+    ss << "Cannot read any file except .mask! Specified file was ." << extension
+       << " You might want ReadFromImage instead.";
+    throw std::runtime_error(ss.str());
+  }
+
+  //Create an input stream for file
+  std::ifstream fin(maskFileName.c_str());
+
+  if(!fin )
+  {
+    throw std::runtime_error("File not found!");
+  }
+
+  std::string line;
+
+  getline(fin, line);
+
+  getline(fin, line);
+
+  std::string imageFileName;
+
+  getline(fin, imageFileName);
+  std::cout << "Mask image file: " << imageFileName << std::endl;
+  return imageFileName;
+}
+
 void Mask::Read(const std::string& filename)
 {
   /**

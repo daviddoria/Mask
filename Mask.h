@@ -332,6 +332,9 @@ public:
   /** Mark the pixel as a valid pixel.*/
   void MarkAsValid(const itk::Index<2>& pixel);
 
+  /** Get data from mask file.*/
+  static std::string GetFilenameFromMaskFile(const std::string& maskFileName);
+
 private:
 
   Mask(const Self &);    //purposely not implemented

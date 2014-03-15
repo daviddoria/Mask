@@ -33,12 +33,16 @@ and those that are "valid".
 A custom file format has been developed to make using existing mask images with this class very easy.
 Simply create a file with the extension .mask, and in it place three things:
 
-holeValue validValue maskFileName
+hole [hole pixel value]
+valid [valid pixel value]
+maskImageFileName
 
 Consider that you have a mask.png with valid pixels indicated in white and hole pixels indicated in black.
 Create a file mymask.mask and in it place
 
-0 255 mask.png
+hole 0
+valid 255
+mask.png
 
 You can then read this file using:
 
