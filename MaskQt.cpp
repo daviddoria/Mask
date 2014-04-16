@@ -27,12 +27,13 @@
 namespace MaskQt
 {
   
-QImage GetQtImage(const Mask* const mask)
+QImage GetQtImage(const Mask* const mask, const unsigned int holeAlpha, const unsigned int nonHoleAlpha)
 {
-  return GetQtImage(mask, mask->GetLargestPossibleRegion());
+  return GetQtImage(mask, mask->GetLargestPossibleRegion(), holeAlpha, nonHoleAlpha);
 }
 
-QImage GetQtImage(const Mask* const mask, const itk::ImageRegion<2>& region)
+QImage GetQtImage(const Mask* const mask, const itk::ImageRegion<2>& region,
+                  const unsigned int holeAlpha, const unsigned int nonHoleAlpha)
 {
   QImage qimage(region.GetSize()[0], region.GetSize()[1], QImage::Format_ARGB32);
 
@@ -59,9 +60,15 @@ QImage GetQtImage(const Mask* const mask, const itk::ImageRegion<2>& region)
 
     unsigned int alpha = 0;
 
+    // alpha = 255 -> opaque
+    // alpha = 0 -> completely transparent
     if(mask->IsHole(index))
     {
-      alpha = 255; // opaque
+      alpha = holeAlpha;
+    }
+    else // pixel is not a hole
+    {
+        alpha = nonHoleAlpha;
     }
 
     QColor pixelColor(r,g,b,alpha);

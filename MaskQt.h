@@ -26,9 +26,11 @@
 
 namespace MaskQt
 {
-  QImage GetQtImage(const Mask* const mask);
+  QImage GetQtImage(const Mask* const mask, const unsigned int holeAlpha = 255,
+                    const unsigned int nonHoleAlpha = 0);
 
-  QImage GetQtImage(const Mask* const mask, const itk::ImageRegion<2>& region);
+  QImage GetQtImage(const Mask* const mask, const itk::ImageRegion<2>& region,
+                    const unsigned int holeAlpha = 255, const unsigned int nonHoleAlpha = 0);
 
   QImage SetPixelsToTransparent(QImage image, const Mask* const mask,
                                 HoleMaskPixelTypeEnum pixelValue);
