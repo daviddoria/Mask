@@ -121,4 +121,31 @@ Write(const std::string& filename,
 
 }
 
+template <typename TImage>
+void ForegroundBackgroundSegmentMask::
+ApplyToImage(TImage* image,
+             const typename TImage::PixelType& backgroundValue)
+{
+
+  itk::ImageRegionConstIterator<ForegroundBackgroundSegmentMask>
+      maskIterator(this,
+                   this->GetLargestPossibleRegion());
+
+  itk::ImageRegionIterator<TImage>
+      imageIterator(image,
+                    image->GetLargestPossibleRegion());
+
+  // Change the image pixels marked as background in the mask to the specified value
+  while(!maskIterator.IsAtEnd())
+  {
+    if(maskIterator.Get() == ForegroundBackgroundSegmentMaskPixelTypeEnum::BACKGROUND)
+    {
+      imageIterator.Set(backgroundValue);
+    }
+    ++maskIterator;
+    ++imageIterator;
+  }
+
+}
+
 #endif
