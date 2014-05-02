@@ -127,11 +127,17 @@ public:
   /** Create a binary image of holes and valid pixels.*/
   typedef itk::Image<unsigned char, 2> UnsignedCharImageType;
   void CreateBinaryImage(UnsignedCharImageType* const image, const unsigned char holeColor,
-                         const unsigned char validColor);
+                         const unsigned char validColor) const;
+  void CreateBinaryImageInRegion(const itk::ImageRegion<2>& region, UnsignedCharImageType* const image,
+                                 const unsigned char holeColor,
+                                 const unsigned char validColor) const;
 
   /** Create an image of holes, valid pixels, and undetermined pixels.*/
   void CreateImage(UnsignedCharImageType* const image, const unsigned char holeColor,
-                   const unsigned char validColor, const unsigned char undeterminedColor);
+                   const unsigned char validColor, const unsigned char undeterminedColor) const;
+  void CreateImageInRegion(const itk::ImageRegion<2>& region, UnsignedCharImageType* const image,
+                           const unsigned char holeColor,
+                           const unsigned char validColor, const unsigned char undeterminedColor) const;
 
   /** Invert the mask by setting all hole pixels to ValidValue and all valid pixels to HoleValue.*/
   void InvertData();
@@ -176,11 +182,9 @@ public:
   /** Find the boundary of the Mask. The output image is black with boundary pixels of value
     * 'outputBoundaryPixelValue'. */
   typedef itk::Image<unsigned char, 2> BoundaryImageType;
-  void CreateBoundaryImage(BoundaryImageType* const boundary, const HoleMaskPixelTypeEnum& whichSideOfBoundary,
-                           const BoundaryImageType::PixelType& outputBoundaryPixelValue = 255) const;
+  void CreateBoundaryImage(BoundaryImageType* const boundary, const HoleMaskPixelTypeEnum& whichSideOfBoundary) const;
   void CreateBoundaryImageInRegion(const itk::ImageRegion<2>& region, BoundaryImageType* const boundaryImage,
-                                   const HoleMaskPixelTypeEnum& whichSideOfBoundary,
-                                   const BoundaryImageType::PixelType& outputBoundaryPixelValue = 255) const;
+                                   const HoleMaskPixelTypeEnum& whichSideOfBoundary) const;
 
   /** Recolor the hole pixels in 'image' a specified 'color'. 'color' cannot have a
     * default value (even itk::NumericTraits<T>::ZeroValue())
