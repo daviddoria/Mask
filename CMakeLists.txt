@@ -65,7 +65,7 @@ if(Mask_BuildMaskQt)
 endif(Mask_BuildMaskQt)
 
 # Only build the MaskVTK library if the user wants it
-option(Mask_BuildMaskVTK "Build MaskQt?")
+option(Mask_BuildMaskVTK "Build MaskVTK?")
 if(Mask_BuildMaskVTK)
   FIND_PACKAGE(VTK REQUIRED)
   INCLUDE(${VTK_USE_FILE})
