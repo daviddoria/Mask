@@ -128,6 +128,10 @@ public:
   void Write(const std::string& filename, const ForegroundPixelValueWrapper<TPixel>& foregroundValue,
              const BackgroundPixelValueWrapper<TPixel>& backgroundValue);
 
+  template <typename TImage>
+  void ApplyToImage(TImage* image,
+                    const typename TImage::PixelType& backgroundValue);
+
   /** Read the mask from a .mask file.*/
   void Read(const std::string& filename);
 
