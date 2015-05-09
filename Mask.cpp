@@ -768,6 +768,11 @@ void Mask::SetHole(const itk::Index<2>& index)
   this->SetPixel(index, HoleMaskPixelTypeEnum::HOLE);
 }
 
+void Mask::SetHole(const itk::ImageRegion<2>& region)
+{
+  ITKHelpers::SetRegionToConstant(this, region, HoleMaskPixelTypeEnum::HOLE);
+}
+
 void Mask::SetValid(const itk::Index<2>& index)
 {
   this->SetPixel(index, HoleMaskPixelTypeEnum::VALID);

@@ -160,6 +160,9 @@ public:
   /** Mark the pixel as a hole.*/
   void SetHole(const itk::Index<2>& index);
 
+  /** Mark the region as a hole.*/
+  void SetHole(const itk::ImageRegion<2>& region);
+
   /** Mark the pixel as valid.*/
   void SetValid(const itk::Index<2>& index);
 
